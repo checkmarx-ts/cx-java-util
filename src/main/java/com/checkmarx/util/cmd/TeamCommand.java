@@ -101,6 +101,7 @@ public class TeamCommand implements Callable<Integer> {
             Integer serverId = cxClient.getLdapServerId(ldapServer);
             if(serverId > 0) {
                 cxClient.mapTeamLdapWS(serverId, teamId, teamName, addLdapDn);
+                log.info("Ldap mapping {} has been added to team {}", addLdapDn, team);
             }
             else {
                 log.error("Ldap Server {} not found ", ldapServer);
@@ -128,6 +129,7 @@ public class TeamCommand implements Callable<Integer> {
             Integer serverId = cxClient.getLdapServerId(ldapServer);
             if(serverId > 0) {
                 cxClient.removeTeamLdapWS(serverId, teamId, teamName, addLdapDn);
+                log.info("Ldap mapping {} has been removed from team {}", addLdapDn, team);
             }
             else {
                 log.error("Ldap Server {} not found ", ldapServer);
@@ -138,7 +140,6 @@ public class TeamCommand implements Callable<Integer> {
             log.error("No Ldap Server provided");
             throw new CheckmarxException("Ldap Server not provided");
         }
-
     }
 
     /**
