@@ -12,6 +12,10 @@ import picocli.CommandLine.Unmatched;
 import picocli.CommandLine.Parameters;
 import java.util.concurrent.Callable;
 
+
+/**
+ * Command for Team based operations within Checkmarx
+ */
 @Component
 @Command
 public class TeamCommand implements Callable<Integer> {
@@ -39,11 +43,21 @@ public class TeamCommand implements Callable<Integer> {
     @Unmatched
     private String[] unknown;
 
+    /**
+     * TeamCommand Constructor for team based operations against Checkmarx
+     * @param cxClient
+     * @param cxProperties
+     */
     public TeamCommand(CxClient cxClient, CxProperties cxProperties) {
         this.cxClient = cxClient;
         this.cxProperties = cxProperties;
     }
 
+    /**
+     * Entry point for Command to execute
+     * @return
+     * @throws Exception
+     */
     public Integer call() throws Exception {
         log.info("Calling Team Command");
         if(!team.startsWith(TEAM_PATH_SEPARATOR)){
@@ -67,6 +81,11 @@ public class TeamCommand implements Callable<Integer> {
         return 0;
     }
 
+    /**
+     * Map a team to an ldap group dn
+     * If the team does not exist, and the the create flag is set, it will be created first
+     * @throws CheckmarxException
+     */
     private void addLdapMapping() throws CheckmarxException{
         if(create){
             log.info("Creating team if it does not exits.");
@@ -94,6 +113,10 @@ public class TeamCommand implements Callable<Integer> {
         }
     }
 
+    /**
+     * Remove an Ldap groupd dn mapping for a team
+     * @throws CheckmarxException
+     */
     private void removeLdapMapping() throws CheckmarxException{
         String teamId = cxClient.getTeamId(team);
         String teamName = getTeamName();
@@ -118,6 +141,10 @@ public class TeamCommand implements Callable<Integer> {
 
     }
 
+    /**
+     * Create a team (if it doesn't exist)
+     * @throws CheckmarxException
+     */
     private void createTeam() throws CheckmarxException {
         //check if the team exists
         if(!cxClient.getTeamId(team).equals("-1")){
@@ -134,6 +161,11 @@ public class TeamCommand implements Callable<Integer> {
         cxClient.createTeamWS(parentId, teamName);
     }
 
+    /**
+     * Delete a given team
+     *
+     * @throws CheckmarxException
+     */
     private void deleteTeam() throws CheckmarxException{
         String teamId = cxClient.getTeamId(team);
         if(teamId.equals("-1")){
@@ -145,6 +177,10 @@ public class TeamCommand implements Callable<Integer> {
         }
     }
 
+    /**
+     * Get the teamname from the full path
+     * @return
+     */
     private String getTeamName(){
         int idx = team.lastIndexOf(TEAM_PATH_SEPARATOR);
         return team.substring(idx+1);
