@@ -4,10 +4,7 @@ plugins {
 }
 
 apply plugin: 'io.spring.dependency-management'
-
-group = 'com.checkmarx.util'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+apply plugin: 'java'
 
 repositories {
 	mavenCentral()
@@ -18,4 +15,84 @@ dependencies {
 	implementation 'com.github.checkmarx-ts:cx-spring-boot-sdk:0.2.1'
 	implementation 'info.picocli:picocli-spring-boot-starter:4.0.1'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+
+// Signing
+apply plugin: 'signing'
+signing {
+	sign configurations.archives
+}
+
+
+// Deploying
+apply plugin: 'maven'
+
+// Add Javadoc JAR and sources JAR to artifact
+task javadocJar(type: Jar) {
+	classifier = 'javadoc'
+	from javadoc
+}
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+artifacts {
+	archives javadocJar, sourcesJar
+}
+
+// Configure group ID, artifact ID, and version
+group = 'com.checkmarx-ts.util'
+archivesBaseName = "cx-java-util"
+version = '0.0.1'
+sourceCompatibility = '1.8'
+
+// Build, sign, and upload
+uploadArchives {
+	repositories {
+		mavenDeployer {
+
+			// Sign POM
+			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+			// Destination
+			repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+				authentication(userName: ossrhUsername, password: ossrhPassword)
+			}
+			snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+				authentication(userName: ossrhUsername, password: ossrhPassword)
+			}
+
+			// Add required metadata to POM
+			pom.project {
+				name 'Checkmarx Java Utils'
+				packaging 'jar'
+				description 'Checkmarx java command line utility'
+				url 'https://github.com/checkmarx-ts/cx-java-util'
+
+				scm {
+					connection 'scm:git:git://github.com/checkmarx-ts/cx-java-util.git'
+					developerConnection 'scm:git:ssh://github.com/checkmarx-ts/cx-java-util.git'
+					url 'http://github.com/checkmarx-ts/cx-java-util/tree/master'
+				}
+
+				licenses {
+					license {
+						name 'GNU General Public License, version 3'
+						url 'http://www.gnu.org/licenses/gpl-3.0.txt'
+					}
+				}
+
+				developers {
+					developer {
+						id 'kmcdon83'
+						name 'Ken McDonald'
+						email 'ken.mcdonald@checkmarx.com'
+						organization 'Checkmarx-ts'
+						organizationUrl 'www.checkmarx.com'
+					}
+				}
+			}
+		}
+	}
 }
