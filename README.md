@@ -6,19 +6,19 @@ Initial implementation is for Team Creation and Ldap Management.  More to follow
 #Team Management
 ####Create a team:
 ```
-java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="checkmarx.local" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="ldapname" -m="CN=CX_USERS,DC=checkmarx,DC=local"
 ```
 ####Delete a team:
 ```
-java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="checkmarx.local" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="ldapname" -m="CN=CX_USERS,DC=checkmarx,DC=local"
 ```
 ####Adding an Ldap Mapping (create team if it doesn't exist)
 ```
-java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="checkmarx.local" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="ldapname" -m="CN=CX_USERS,DC=checkmarx,DC=local"
 ```
 ####Remove an Ldap Mapping 
 ```
-java -jar <util jar> -command=team -action=remove-ldap -t="CxServer\SP\Checkmarx\NewTeam" -s="checkmarx.local" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> -command=team -action=remove-ldap -t="CxServer\SP\Checkmarx\NewTeam" -s="ldapname" -m="CN=CX_USERS,DC=checkmarx,DC=local"
 ```
 
 ####Command line Options:
@@ -27,7 +27,7 @@ java -jar <util jar> -command=team -action=remove-ldap -t="CxServer\SP\Checkmarx
     -action, --action -> Action to execute - create, delete, add-ldap, remove-ldap
     -t, --team -> Checkmarx Team
     -create, --create -> Create team if it does not exist (parent team must exist)
-    -s, --ldap-server -> LDAP Server Name (only applicable for add/remove-ldap)
+    -s, --ldap-server -> LDAP Server Name from LDAP registration in CxManager (only applicable for add/remove-ldap)
     -m, --add-ldap-map -> Add LDAP DN Mapping (only applicable for add/remove-ldap)
     -r, --remove-ldap-map -> Remove LDAP DN Mapping (only applicable for add/remove-ldap)
 ```
