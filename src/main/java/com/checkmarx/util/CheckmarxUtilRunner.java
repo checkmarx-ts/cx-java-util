@@ -41,7 +41,7 @@ public class CheckmarxUtilRunner implements CommandLineRunner, ExitCodeGenerator
             exitCode = new CommandLine(teamCommand, factory).execute(args);
         }
         else if(argsList.contains("-command=role") || argsList.contains("--command=role")){
-            exitCode = new CommandLine(teamCommand, factory).execute(args);
+            exitCode = new CommandLine(roleCommand, factory).execute(args);
         }
         else{
             log.info("No valid option given");
