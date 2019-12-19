@@ -1,6 +1,7 @@
 package com.checkmarx.util.cmd;
 
 import com.checkmarx.sdk.config.CxProperties;
+import com.checkmarx.sdk.dto.cx.CxTeam;
 import com.checkmarx.sdk.exception.CheckmarxException;
 import com.checkmarx.sdk.service.CxClient;
 import org.apache.commons.lang3.StringUtils;
@@ -10,6 +11,8 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Unmatched;
 import picocli.CommandLine.Parameters;
+
+import java.util.List;
 import java.util.concurrent.Callable;
 
 
@@ -26,10 +29,12 @@ public class TeamCommand implements Callable<Integer> {
 
     @Option(names = {"-command","--command"}, description = "Command name")
     private String command;
-    @Option(names = {"-action","--action"}, description = "Action to execute - create, delete, add-ldap, remove-ldap,")
+    @Option(names = {"-action","--action"}, description = "Action to execute - create, delete, move, add-ldap, remove-ldap,")
     private String action;
     @Option(names = {"-t","--team"}, description = "Checkmarx Team")
     private String team;
+    @Option(names = {"-d","--destination-team"}, description = "Checkmarx Destination Team")
+    private String destTeam;
     @Option(names = {"-create","--create"}, description = "Create team if it does not exist (parent team must exist)")
     private boolean create;
     @Option(names = {"-s","--ldap-server"}, description = "LDAP Server Name")
@@ -42,6 +47,9 @@ public class TeamCommand implements Callable<Integer> {
     private String[] remainder;
     @Unmatched
     private String[] unknown;
+
+    private static final String UNKNOWN = "-1";
+    private static final Integer UNKNOWN_INT = -1;
 
     /**
      * TeamCommand Constructor for team based operations against Checkmarx
@@ -69,6 +77,9 @@ public class TeamCommand implements Callable<Integer> {
                 break;
             case "DELETE":
                 deleteTeam();
+                break;
+            case "MOVE":
+                moveTeam();
                 break;
             case "ADD-LDAP":
                 addLdapMapping();
@@ -179,11 +190,81 @@ public class TeamCommand implements Callable<Integer> {
     }
 
     /**
-     * Get the teamname from the full path
-     * @return
+     * Move a team to destTeam
+     * @throws CheckmarxException
+     */
+    private void moveTeam() throws CheckmarxException {
+        //Make sure we have the destination
+        if(StringUtils.isNotEmpty(destTeam)) {
+            if(!destTeam.startsWith(TEAM_PATH_SEPARATOR)){
+                destTeam = TEAM_PATH_SEPARATOR.concat(destTeam);
+            }
+            log.info("Moving team {} under {}", team, destTeam);
+            // Get a list of teams and use it to lookup two IDs
+            List<CxTeam> teams = cxClient.getTeams();
+            if (teams == null) {
+                throw new CheckmarxException("Error obtaining Team Id for " + team);
+            }
+            String teamId = UNKNOWN;
+            for (CxTeam cxteam : teams) {
+                if (cxteam.getFullName().equals(team)) {
+                    log.info("Found team {} with ID {}", team, cxteam.getId());
+                    teamId = cxteam.getId();
+                    break;
+                }
+            }
+
+            if(StringUtils.equals(teamId, UNKNOWN)) {
+                log.error("Error moving team {}: not found", team);
+            }
+            else {
+                String destTeamId = UNKNOWN;
+                for (CxTeam cxteam : teams) {
+                    if (cxteam.getFullName().equals(destTeam)) {
+                        log.info("Found team {} with ID {}", destTeam, cxteam.getId());
+                        destTeamId = cxteam.getId();
+                        break;
+                    }
+                }
+                if(StringUtils.equals(destTeamId, UNKNOWN)) {
+                    log.error("Error moving team {}: new parent team {} not found", team, destTeam);
+                } else {
+                    cxClient.moveTeam(teamId, destTeamId);
+                    log.info("Move successful for team {}", team);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the team name from the full path
+     * @return Team name (text to the right of the last separator)
      */
     private String getTeamName(){
         int idx = team.lastIndexOf(TEAM_PATH_SEPARATOR);
         return team.substring(idx+1);
+    }
+
+    /**
+     * Get the team name from the full path
+     * @param inTeam Full path of the team to parse
+     * @return inTeam name (text to the right of the last separator)
+     */
+    private String getTeamName(String inTeam){
+        int idx = inTeam.lastIndexOf(TEAM_PATH_SEPARATOR);
+        return inTeam.substring(idx+1);
+    }
+
+    /**
+     * Get the parent team from the full path
+     * @param inTeam Full path of the team to parse
+     * @return Parent team (inTeam path without  name)
+     */
+    private String getParentTeam(String inTeam) {
+        int idx = inTeam.lastIndexOf(TEAM_PATH_SEPARATOR);
+        if(idx > 0)
+            return inTeam.substring(0, idx);
+        else
+            return "";
     }
 }

@@ -30,7 +30,7 @@ public class CheckmarxUtilRunner implements CommandLineRunner, ExitCodeGenerator
 
     @Override
     public void run(String[] args) {
-        if(args == null && args.length == 0) {
+        if(args == null || args.length == 0) {
             exitCode = -1;
             exit(-1);
         }
