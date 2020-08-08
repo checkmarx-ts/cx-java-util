@@ -50,7 +50,7 @@ public class RoleCommand implements Callable<Integer> {
 
     /**
      * Entry point for Command to execute
-     * @return
+     * @return 0 if success, or throws exception if failure
      * @throws Exception
      */
     public Integer call() throws Exception {
