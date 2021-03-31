@@ -2,7 +2,7 @@ package com.checkmarx.util.cmd;
 
 import com.checkmarx.sdk.config.CxProperties;
 import com.checkmarx.sdk.exception.CheckmarxException;
-import com.checkmarx.sdk.service.CxClient;
+import com.checkmarx.sdk.service.CxService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ import java.util.concurrent.Callable;
 @Command
 public class RoleCommand implements Callable<Integer> {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(RoleCommand.class);
-    private final CxClient cxClient;
+    private final CxService cxService;
     private final CxProperties cxProperties;
 
     @Option(names = {"-command","--command"}, description = "Command name")
@@ -40,11 +40,11 @@ public class RoleCommand implements Callable<Integer> {
 
     /**
      * TeamCommand Constructor for team based operations against Checkmarx
-     * @param cxClient
+     * @param cxService
      * @param cxProperties
      */
-    public RoleCommand(CxClient cxClient, CxProperties cxProperties) {
-        this.cxClient = cxClient;
+    public RoleCommand(CxService cxService, CxProperties cxProperties) {
+        this.cxService = cxService;
         this.cxProperties = cxProperties;
     }
 
@@ -70,15 +70,15 @@ public class RoleCommand implements Callable<Integer> {
      * @throws CheckmarxException
      */
     private void addLdapMapping() throws CheckmarxException{
-        Integer roleId = cxClient.getRoleId(role);
+        Integer roleId = cxService.getRoleId(role);
         if(roleId.equals(-1)){
             log.error("Could not find role {}", role);
             throw new CheckmarxException("Could not find role ".concat(role));
         }
         if(StringUtils.isNotEmpty(ldapServer)) {
-            Integer serverId = cxClient.getLdapServerId(ldapServer);
+            Integer serverId = cxService.getLdapServerId(ldapServer);
             if(serverId > 0) {
-                cxClient.mapRoleLdap(serverId, roleId, ldapDn);
+                cxService.mapRoleLdap(serverId, roleId, ldapDn);
                 log.info("Ldap mapping {} has been added to role {}", ldapDn, role);
             }
             else {
@@ -97,15 +97,15 @@ public class RoleCommand implements Callable<Integer> {
      * @throws CheckmarxException
      */
     private void removeLdapMapping() throws CheckmarxException{
-        Integer roleId = cxClient.getRoleId(role);
+        Integer roleId = cxService.getRoleId(role);
         if(roleId.equals(-1)){
             log.error("Could not find role {}", role);
             throw new CheckmarxException("Could not find role ".concat(role));
         }
         if(StringUtils.isNotEmpty(ldapServer)) {
-            Integer serverId = cxClient.getLdapServerId(ldapServer);
+            Integer serverId = cxService.getLdapServerId(ldapServer);
             if(serverId > 0) {
-                cxClient.removeRoleLdap(serverId, roleId, ldapDn);
+                cxService.removeRoleLdap(serverId, roleId, ldapDn);
                 log.info("Ldap mapping {} has been removed from role {}", ldapDn, role);
             }
             else {
