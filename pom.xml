@@ -25,9 +25,9 @@
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.github.checkmarx-ts</groupId>
+			<groupId>com.github.checkmarx-ltd</groupId>
 			<artifactId>cx-spring-boot-sdk</artifactId>
-			<version>0.4.36</version>
+			<version>0.4.94</version>
 		</dependency>
 		<dependency>
 			<groupId>info.picocli</groupId>
