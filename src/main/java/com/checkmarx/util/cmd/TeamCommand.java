@@ -20,7 +20,6 @@ import java.util.concurrent.Callable;
 @Command
 public class TeamCommand implements Callable<Integer> {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(TeamCommand.class);
-    private static final String TEAM_PATH_SEPARATOR = "\\";
     private final CxClient cxClient;
     private final CxProperties cxProperties;
 
@@ -55,13 +54,13 @@ public class TeamCommand implements Callable<Integer> {
 
     /**
      * Entry point for Command to execute
-     * @return
+     * @return 0 if success, or throws exception if failure
      * @throws Exception
      */
     public Integer call() throws Exception {
         log.info("Calling Team Command");
-        if(!team.startsWith(TEAM_PATH_SEPARATOR)){
-            team = TEAM_PATH_SEPARATOR.concat(team);
+        if(!team.startsWith(this.cxProperties.getTeamPathSeparator())){
+            team = this.cxProperties.getTeamPathSeparator().concat(team);
         }
         switch (action.toUpperCase()){
             case "CREATE":
@@ -153,13 +152,13 @@ public class TeamCommand implements Callable<Integer> {
             return;
         }
         //get the parent and create the team
-        int idx = team.lastIndexOf(TEAM_PATH_SEPARATOR);
+        int idx = team.lastIndexOf(this.cxProperties.getTeamPathSeparator());
         String parentPath = team.substring(0, idx);
         String teamName = getTeamName();
         log.info("Parent path: {}", parentPath);
         String parentId = cxClient.getTeamId(parentPath);
         log.info(parentId);
-        cxClient.createTeamWS(parentId, teamName);
+        cxClient.createTeam(parentId, teamName);
     }
 
     /**
@@ -174,7 +173,7 @@ public class TeamCommand implements Callable<Integer> {
         }
         else {
             log.info("Deleting team {} with Id {}", team, teamId);
-            cxClient.deleteTeamWS(teamId);
+            cxClient.deleteTeam(teamId);
         }
     }
 
@@ -183,7 +182,7 @@ public class TeamCommand implements Callable<Integer> {
      * @return
      */
     private String getTeamName(){
-        int idx = team.lastIndexOf(TEAM_PATH_SEPARATOR);
+        int idx = team.lastIndexOf(this.cxProperties.getTeamPathSeparator());
         return team.substring(idx+1);
     }
 }
