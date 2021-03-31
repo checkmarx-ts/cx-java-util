@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'com.github.checkmarx-ts:cx-spring-boot-sdk:0.3.6'
+	implementation 'com.github.checkmarx-ltd:cx-spring-boot-sdk:0.4.94'
 	implementation 'info.picocli:picocli-spring-boot-starter:4.0.1'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
@@ -44,7 +44,7 @@ artifacts {
 // Configure group ID, artifact ID, and version
 group = 'com.checkmarx-ts.util'
 archivesBaseName = "cx-java-util"
-version = '0.0.1'
+version = '0.2.1'
 sourceCompatibility = '1.8'
 
 // Build, sign, and upload
