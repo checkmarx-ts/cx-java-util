@@ -6,41 +6,30 @@ Initial implementation is for Team Creation and Ldap Management.  More to follow
 # Team Management
 #### Create a team:
 ```
-java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="checkmarx.local" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> team create "CxServer\SP\Checkmarx\NewTeam"
 ```
 #### Delete a team:
 ```
-java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="checkmarx.local" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> team delete "CxServer\SP\Checkmarx\NewTeam"
 ```
 #### Adding an Ldap Mapping (create team if it doesn't exist)
 ```
-java -jar <util jar> -command=team -action=add-ldap -create -t="CxServer\SP\Checkmarx\NewTeam" -s="checkmarx.local" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> team add-ldap -create "CxServer\SP\Checkmarx\NewTeam" "checkmarx.local" "CN=CX_USERS,DC=checkmarx,DC=local"
 ```
 #### Remove an Ldap Mapping 
 ```
-java -jar <util jar> -command=team -action=remove-ldap -t="CxServer\SP\Checkmarx\NewTeam" -s="checkmarx.local" -m="CN=CX_USERS,DC=checkmarx,DC=local"
-```
-
-#### Command line Options:
-```
-    -command, --command -> Command name    
-    -action, --action -> Action to execute - create, delete, add-ldap, remove-ldap
-    -t, --team -> Checkmarx Team
-    -create, --create -> Create team if it does not exist (parent team must exist)
-    -s, --ldap-server -> LDAP Server Name (only applicable for add/remove-ldap)
-    -m, --add-ldap-map -> Add LDAP DN Mapping (only applicable for add/remove-ldap)
-    -r, --remove-ldap-map -> Remove LDAP DN Mapping (only applicable for add/remove-ldap)
+java -jar <util jar> team remove-ldap "CxServer\SP\Checkmarx\NewTeam" "checkmarx.local" "CN=CX_USERS,DC=checkmarx,DC=local"
 ```
 
 # Role Management
 
 #### Map Role to LDAP DN:
 ```
-java -jar <util jar> -command=role -action=add-ldap -s="checkmarx.local" -r="Admin" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> role add-ldap "checkmarx.local" "Admin" "CN=CX_USERS,DC=checkmarx,DC=local"
 ```
 #### Remove LDAP Role Mapping:
 ```
-java -jar <util jar> -command=role -action=remove-ldap -s="checkmarx.local" -r="Admin" -m="CN=CX_USERS,DC=checkmarx,DC=local"
+java -jar <util jar> role remove-ldap "checkmarx.local" "Admin" "CN=CX_USERS,DC=checkmarx,DC=local"
 ```
 #### Checkmarx Properties 8.x:
 ```yaml
