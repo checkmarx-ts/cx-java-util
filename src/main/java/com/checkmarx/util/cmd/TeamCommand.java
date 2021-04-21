@@ -6,10 +6,13 @@ import com.checkmarx.sdk.service.CxService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.Unmatched;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Spec;
 import java.util.concurrent.Callable;
 
 
@@ -17,30 +20,14 @@ import java.util.concurrent.Callable;
  * Command for Team based operations within Checkmarx
  */
 @Component
-@Command
+@Command(name = "team")
 public class TeamCommand implements Callable<Integer> {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(TeamCommand.class);
     private final CxService cxService;
     private final CxProperties cxProperties;
 
-    @Option(names = {"-command","--command"}, description = "Command name")
-    private String command;
-    @Option(names = {"-action","--action"}, description = "Action to execute - create, delete, add-ldap, remove-ldap,")
-    private String action;
-    @Option(names = {"-t","--team"}, description = "Checkmarx Team")
-    private String team;
-    @Option(names = {"-create","--create"}, description = "Create team if it does not exist (parent team must exist)")
-    private boolean create;
-    @Option(names = {"-s","--ldap-server"}, description = "LDAP Server Name")
-    private String ldapServer;
-    @Option(names = {"-m","--add-ldap-map"}, description = "Add LDAP DN Mapping")
-    private String addLdapDn;
-    @Option(names = {"-r","--remove-ldap-map"}, description = "Remove LDAP DN Mapping")
-    private String removeLdapDn;
-    @Parameters
-    private String[] remainder;
-    @Unmatched
-    private String[] unknown;
+    @Spec
+    private CommandSpec spec;
 
     /**
      * TeamCommand Constructor for team based operations against Checkmarx
@@ -53,31 +40,16 @@ public class TeamCommand implements Callable<Integer> {
     }
 
     /**
-     * Entry point for Command to execute
-     * @return 0 if success, or throws exception if failure
-     * @throws Exception
+     * Dummy implementation of the call method to implement the Callable
+     * interface.
+     *
+     * @return CommandLine.ExitCode.USAGE
      */
-    public Integer call() throws Exception {
-        log.info("Calling Team Command");
-        if(!team.startsWith(this.cxProperties.getTeamPathSeparator())){
-            team = this.cxProperties.getTeamPathSeparator().concat(team);
-        }
-        switch (action.toUpperCase()){
-            case "CREATE":
-                createTeam();
-                break;
-            case "DELETE":
-                deleteTeam();
-                break;
-            case "ADD-LDAP":
-                addLdapMapping();
-                break;
-            case "REMOVE-LDAP":
-                removeLdapMapping();
-                break;
-        }
+    public Integer call() {
+        log.info("Calling team command");
 
-        return 0;
+	CommandLine.usage(spec, System.err);
+        return CommandLine.ExitCode.USAGE;
     }
 
     /**
@@ -85,13 +57,21 @@ public class TeamCommand implements Callable<Integer> {
      * If the team does not exist, and the the create flag is set, it will be created first
      * @throws CheckmarxException
      */
-    private void addLdapMapping() throws CheckmarxException{
+    @Command(name = "add-ldap")
+    private void addLdapMapping(
+	    @Option(names = {"-create","--create"},
+	    description = "Create team if it does not exist (parent team must exist)") Boolean create,
+	    @Parameters(paramLabel = "Team") String team,
+	    @Parameters(paramLabel = "LDAP Server") String ldapServer,
+	    @Parameters(paramLabel = "LDAP Mapping") String addLdapDn
+	    ) throws CheckmarxException{
+        log.info("Calling team add-ldap command");
         if(create){
             log.info("Creating team if it does not exits.");
-            createTeam();
+            createTeam(team);
         }
         String teamId = cxService.getTeamId(team);
-        String teamName = getTeamName();
+        String teamName = getTeamName(team);
         if(teamId.equals("-1")){
             log.error("Could not find team {}", team);
             throw new CheckmarxException("Could not find team ".concat(team));
@@ -117,9 +97,16 @@ public class TeamCommand implements Callable<Integer> {
      * Remove an Ldap groupd dn mapping for a team
      * @throws CheckmarxException
      */
-    private void removeLdapMapping() throws CheckmarxException{
+    @Command(name = "remove-ldap")
+    private void removeLdapMapping(
+	    @Parameters(paramLabel = "Team") String team,
+	    @Parameters(paramLabel = "LDAP Server") String ldapServer,
+	    @Parameters(paramLabel = "LDAP Mapping") String addLdapDn
+	    ) throws CheckmarxException{
+        log.info("Calling team remove-ldap command");
+	addPathSeparatorPrefix(team);
         String teamId = cxService.getTeamId(team);
-        String teamName = getTeamName();
+        String teamName = getTeamName(team);
         if(teamId.equals("-1")){
             log.error("Could not find team {}", team);
             throw new CheckmarxException("Could not find team ".concat(team));
@@ -145,7 +132,12 @@ public class TeamCommand implements Callable<Integer> {
      * Create a team (if it doesn't exist)
      * @throws CheckmarxException
      */
-    private void createTeam() throws CheckmarxException {
+    @Command(name = "create")
+    private void createTeam(
+	    @Parameters(paramLabel = "Team") String team
+	    ) throws CheckmarxException {
+        log.info("Calling team create command");
+	addPathSeparatorPrefix(team);
         //check if the team exists
         if(!cxService.getTeamId(team).equals("-1")){
             log.warn("Team already exists...");
@@ -154,7 +146,7 @@ public class TeamCommand implements Callable<Integer> {
         //get the parent and create the team
         int idx = team.lastIndexOf(this.cxProperties.getTeamPathSeparator());
         String parentPath = team.substring(0, idx);
-        String teamName = getTeamName();
+        String teamName = getTeamName(team);
         log.info("Parent path: {}", parentPath);
         String parentId = cxService.getTeamId(parentPath);
         log.info(parentId);
@@ -166,7 +158,12 @@ public class TeamCommand implements Callable<Integer> {
      *
      * @throws CheckmarxException
      */
-    private void deleteTeam() throws CheckmarxException{
+    @Command(name = "delete")
+    private void deleteTeam(
+	    @Parameters(paramLabel = "Team") String team
+	    ) throws CheckmarxException{
+        log.info("Calling team delete command");
+	addPathSeparatorPrefix(team);
         String teamId = cxService.getTeamId(team);
         if(teamId.equals("-1")){
             log.warn("Could not find team {}", team);
@@ -181,8 +178,23 @@ public class TeamCommand implements Callable<Integer> {
      * Get the teamname from the full path
      * @return
      */
-    private String getTeamName(){
+    private String getTeamName(String team){
         int idx = team.lastIndexOf(this.cxProperties.getTeamPathSeparator());
         return team.substring(idx+1);
+    }
+
+    /**
+     * Add the path separator to the start of the team name if it does
+     * not already start with it.
+     *
+     * @param team the team name
+     * @return the team name, starting with the path separator
+     */
+    private String addPathSeparatorPrefix(String team) {
+        if(!team.startsWith(this.cxProperties.getTeamPathSeparator())){
+            team = this.cxProperties.getTeamPathSeparator().concat(team);
+        }
+
+        return team;
     }
 }

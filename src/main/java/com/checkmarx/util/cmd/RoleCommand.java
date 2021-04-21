@@ -6,10 +6,12 @@ import com.checkmarx.sdk.service.CxService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Unmatched;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Spec;
 import java.util.concurrent.Callable;
 
 
@@ -17,26 +19,15 @@ import java.util.concurrent.Callable;
  * Command for Role Ldap Mapping based operations within Checkmarx
  */
 @Component
-@Command
+@Command(name = "role")
 public class RoleCommand implements Callable<Integer> {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(RoleCommand.class);
     private final CxService cxService;
+    @SuppressWarnings("unused")
     private final CxProperties cxProperties;
 
-    @Option(names = {"-command","--command"}, description = "Command name")
-    private String command;
-    @Option(names = {"-action","--action"}, description = "Action to execute - add-ldap, remove-ldap,")
-    private String action;
-    @Option(names = {"-s","--ldap-server"}, description = "LDAP Server Name")
-    private String ldapServer;
-    @Option(names = {"-r","--role"}, description = "Role Name")
-    private String role;
-    @Option(names = {"-m","--ldap-dn"}, description = "Add LDAP DN Mapping")
-    private String ldapDn;
-    @Parameters
-    private String[] remainder;
-    @Unmatched
-    private String[] unknown;
+    @Spec
+    private CommandSpec spec;
 
     /**
      * TeamCommand Constructor for team based operations against Checkmarx
@@ -49,27 +40,29 @@ public class RoleCommand implements Callable<Integer> {
     }
 
     /**
-     * Entry point for Command to execute
-     * @return 0 if success, or throws exception if failure
-     * @throws Exception
+     * Dummy implementation of the call method to implement the Callable
+     * interface.
+     *
+     * @return CommandLine.ExitCode.USAGE
      */
     public Integer call() throws Exception {
-        log.info("Calling Role Command");
+        log.info("Calling role command");
 
-        if ("ADD-LDAP".equals(action.toUpperCase())) {
-            addLdapMapping();
-        } else if ("REMOVE-LDAP".equals(action.toUpperCase())) {
-            removeLdapMapping();
-        }
-
-        return 0;
+	CommandLine.usage(spec, System.err);
+        return CommandLine.ExitCode.USAGE;
     }
 
     /**
      * Map a ldap group dn to a role
      * @throws CheckmarxException
      */
-    private void addLdapMapping() throws CheckmarxException{
+    @Command(name = "add-ldap")
+    private void addLdapMapping(
+	    @Parameters(paramLabel = "LDAP Server") String ldapServer,
+	    @Parameters(paramLabel = "Role") String role,
+	    @Parameters(paramLabel = "Mapping") String ldapDn
+	    ) throws CheckmarxException{
+        log.info("Calling role add-ldap command");
         Integer roleId = cxService.getRoleId(role);
         if(roleId.equals(-1)){
             log.error("Could not find role {}", role);
@@ -96,7 +89,13 @@ public class RoleCommand implements Callable<Integer> {
      * Remove an Ldap dn mapping for a role
      * @throws CheckmarxException
      */
-    private void removeLdapMapping() throws CheckmarxException{
+    @Command(name = "remove-ldap")
+    private void removeLdapMapping(
+	    @Parameters(paramLabel = "LDAP Server") String ldapServer,
+	    @Parameters(paramLabel = "Role") String role,
+	    @Parameters(paramLabel = "Mapping") String ldapDn
+) throws CheckmarxException{
+        log.info("Calling role remove-ldap command");
         Integer roleId = cxService.getRoleId(role);
         if(roleId.equals(-1)){
             log.error("Could not find role {}", role);
