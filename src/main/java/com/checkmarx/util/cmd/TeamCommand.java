@@ -15,6 +15,7 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
 import java.util.concurrent.Callable;
 
+import static com.checkmarx.util.cmd.CmdUtil.addTeamPathSeparatorPrefix;
 
 /**
  * Command for Team based operations within Checkmarx
@@ -104,7 +105,7 @@ public class TeamCommand implements Callable<Integer> {
 	    @Parameters(paramLabel = "LDAP Mapping") String addLdapDn
 	    ) throws CheckmarxException{
         log.info("Calling team remove-ldap command");
-	addPathSeparatorPrefix(team);
+	addTeamPathSeparatorPrefix(cxProperties, team);
         String teamId = cxService.getTeamId(team);
         String teamName = getTeamName(team);
         if(teamId.equals("-1")){
@@ -137,7 +138,7 @@ public class TeamCommand implements Callable<Integer> {
 	    @Parameters(paramLabel = "Team") String team
 	    ) throws CheckmarxException {
         log.info("Calling team create command");
-	addPathSeparatorPrefix(team);
+	addTeamPathSeparatorPrefix(cxProperties, team);
         //check if the team exists
         if(!cxService.getTeamId(team).equals("-1")){
             log.warn("Team already exists...");
@@ -163,7 +164,7 @@ public class TeamCommand implements Callable<Integer> {
 	    @Parameters(paramLabel = "Team") String team
 	    ) throws CheckmarxException{
         log.info("Calling team delete command");
-	addPathSeparatorPrefix(team);
+	addTeamPathSeparatorPrefix(cxProperties, team);
         String teamId = cxService.getTeamId(team);
         if(teamId.equals("-1")){
             log.warn("Could not find team {}", team);
@@ -181,20 +182,5 @@ public class TeamCommand implements Callable<Integer> {
     private String getTeamName(String team){
         int idx = team.lastIndexOf(this.cxProperties.getTeamPathSeparator());
         return team.substring(idx+1);
-    }
-
-    /**
-     * Add the path separator to the start of the team name if it does
-     * not already start with it.
-     *
-     * @param team the team name
-     * @return the team name, starting with the path separator
-     */
-    private String addPathSeparatorPrefix(String team) {
-        if(!team.startsWith(this.cxProperties.getTeamPathSeparator())){
-            team = this.cxProperties.getTeamPathSeparator().concat(team);
-        }
-
-        return team;
     }
 }

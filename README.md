@@ -3,6 +3,12 @@
 
 Initial implementation is for Team Creation and Ldap Management.  More to follow.
 
+# Project Management
+#### Set a Project’s Custom Fields
+```
+java -jar <util jar> project set-custom-fields netgoat varA=valA varB=ValB
+```
+
 # Team Management
 #### Create a team:
 ```
