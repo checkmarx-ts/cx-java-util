@@ -11,6 +11,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 @Component
@@ -34,6 +35,12 @@ public class CheckmarxUtilRunner implements Callable<Integer>, CommandLineRunner
     @Override
     public void run(String[] args) {
 	log.debug("run: starting");
+
+	// Strip out arguments used to configure the SDK
+	args = Arrays.stream(args)
+		.filter(s -> !s.startsWith("--checkmarx."))
+		.toArray(String[]::new);
+
         exitCode = new CommandLine(this)
         	.addSubcommand(projectCommand)
         	.addSubcommand(roleCommand)
