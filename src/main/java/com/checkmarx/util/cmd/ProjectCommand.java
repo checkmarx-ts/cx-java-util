@@ -72,6 +72,14 @@ public class ProjectCommand implements Callable<Integer> {
 
         CxProject cxProject = null;
 
+        // If the project has been provided as <team>/<project>, split it.
+        int index = project.lastIndexOf(cxProperties.getTeamPathSeparator());
+        if (index >= 0) {
+            team = project.substring(0, index);
+            project = project.substring(index + 1);
+        }
+        log.debug("setCustomFields: project: {}, team: {}", project, team);
+
         if (team != null) {
             team = addTeamPathSeparatorPrefix(cxProperties, team);
             String teamId = cxService.getTeamId(team);
