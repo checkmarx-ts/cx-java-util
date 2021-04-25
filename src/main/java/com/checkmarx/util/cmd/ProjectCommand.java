@@ -62,11 +62,12 @@ public class ProjectCommand implements Callable<Integer> {
      * Set a project's custom fields
      * @throws CheckmarxException
      */
-    @Command(name = "set-custom-fields")
+    @Command(name = "set-custom-fields", description = "Set a project's custom fields")
     private void setCustomFields(
-	    @Option(names = {"-team", "--team"}) String team,
-	    @Parameters(paramLabel = "Project") String project,
-	    @Parameters(paramLabel = "Custom fields", arity = "1..*") String[] customFields
+	    @Option(names = {"-s", "--strict"}, description = "Fail if unrecognised custom field specified") Boolean strict,
+	    @Option(names = {"-t", "--team"}, description = "The team to which the project belongs") String team,
+	    @Parameters(paramLabel = "Project", description = "The project name, optionally qualified by the team") String project,
+	    @Parameters(paramLabel = "Custom fields", arity = "1..*", description = "One or more name=value pairs") String[] customFields
 	    ) throws CheckmarxException{
         log.info("Calling project set-custom-fields command");
 
@@ -120,7 +121,12 @@ public class ProjectCommand implements Callable<Integer> {
 		}
 	    }
 	    if (cf.id == null) {
-		throw new CheckmarxException(String.format("%s: unrecognised custom field", customFieldName));
+		if (strict != null && strict) {
+		    throw new CheckmarxException(String.format("%s: unrecognised custom field", customFieldName));
+		} else {
+		    log.warn("{}: skipping unrecognised custom field", customFieldName);
+		    continue;
+		}
 	    }
 	    cf.value = customFieldValue;
 	    customFieldList.add(cf);
