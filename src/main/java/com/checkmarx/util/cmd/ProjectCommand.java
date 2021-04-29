@@ -131,7 +131,12 @@ public class ProjectCommand implements Callable<Integer> {
 	    cf.value = customFieldValue;
 	    customFieldList.add(cf);
 	}
-	cxProject.customFields = customFieldList;
-	cxService.updateProjectCustomFields(cxProject);
+
+	if (!customFieldList.isEmpty()) {
+	    cxProject.customFields = customFieldList;
+	    cxService.updateProjectCustomFields(cxProject);
+	} else {
+	    log.info("No valid custom fields provided");
+	}
     }
 }
