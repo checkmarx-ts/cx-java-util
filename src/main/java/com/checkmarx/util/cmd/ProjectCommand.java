@@ -70,6 +70,8 @@ public class ProjectCommand implements Callable<Integer> {
 	    @Parameters(paramLabel = "Custom fields", arity = "1..*", description = "One or more name=value pairs") String[] customFields
 	    ) throws CheckmarxException{
         log.info("Calling project set-custom-fields command");
+        log.debug("setCustomFields: strict: {}, team: {}, project: {}, customFields: {}",
+        	strict, team, project, customFields);
 
         CxProject cxProject = null;
 
