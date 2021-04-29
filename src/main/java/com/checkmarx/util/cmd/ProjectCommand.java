@@ -37,8 +37,8 @@ public class ProjectCommand implements Callable<Integer> {
 
     /**
      * TeamCommand Constructor for team based operations against Checkmarx
-     * @param cxService
-     * @param cxProperties
+     * @param cxService the SDK client
+     * @param cxProperties the SDK configuration
      */
     public ProjectCommand(CxService cxService, CxProperties cxProperties) {
         this.cxService = cxService;
