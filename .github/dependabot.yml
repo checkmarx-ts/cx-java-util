@@ -7,3 +7,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  # Maintain dependencies for maven
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
