@@ -29,7 +29,6 @@ import static com.checkmarx.util.cmd.CmdUtil.addTeamPathSeparatorPrefix;
 public class ProjectCommand implements Callable<Integer> {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(ProjectCommand.class);
     private final CxService cxService;
-    @SuppressWarnings("unused")
     private final CxProperties cxProperties;
 
     @Spec
