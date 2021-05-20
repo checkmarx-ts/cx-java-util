@@ -15,6 +15,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -29,12 +31,22 @@ import static com.checkmarx.util.cmd.CmdUtil.addTeamPathSeparatorPrefix;
 public class ProjectCommand implements Callable<Integer> {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(ProjectCommand.class);
     private final CxService cxService;
-    @SuppressWarnings("unused")
     private final CxProperties cxProperties;
 
     @Spec
     private CommandSpec spec;
 
+    public enum ExitStatus {
+	FULL_SCAN_REQUIRED(0),
+	FULL_SCAN_NOT_REQUIRED(2);
+	private int exitStatus;
+	public int getExitStatus() {
+	    return exitStatus;
+	}
+	private ExitStatus(int exitStatus) {
+	    this.exitStatus = exitStatus;
+	}
+    }
     /**
      * TeamCommand Constructor for team based operations against Checkmarx
      * @param cxService the SDK client
@@ -73,40 +85,7 @@ public class ProjectCommand implements Callable<Integer> {
         log.debug("setCustomFields: strict: {}, team: {}, project: {}, customFields: {}",
         	strict, team, project, customFields);
 
-        CxProject cxProject = null;
-
-        // If the project has been provided as <team>/<project>, split it.
-        int index = project.lastIndexOf(cxProperties.getTeamPathSeparator());
-        if (index >= 0) {
-            team = project.substring(0, index);
-            project = project.substring(index + 1);
-        }
-        log.debug("setCustomFields: project: {}, team: {}", project, team);
-
-        if (team != null) {
-            team = addTeamPathSeparatorPrefix(cxProperties, team);
-            String teamId = cxService.getTeamId(team);
-            Integer projectId = cxService.getProjectId(teamId, project);
-            cxProject = cxService.getProject(projectId);
-        } else {
-            List<CxProject> projects = cxService.getProjects();
-            if (projects.isEmpty()) {
-        	throw new CheckmarxException("setCustomFields: no projects found");
-            }
-            for (CxProject p : projects) {
-        	if (p.name.equalsIgnoreCase(project)) {
-        	    if (cxProject == null) {
-        		cxProject = p;
-        	    } else {
-        		throw new CheckmarxException(String.format("%s: project name is not unique", project));
-        	    }
-        	}
-            }
-        }
-
-        if (cxProject == null) {
-            throw new CheckmarxException(String.format("%s: canot find project", project));
-        }
+        CxProject cxProject = getCxProject(project, team);
 
 	List<CxCustomField> cxCustomFields = cxService.getCustomFields();
 	log.debug("setCustomFields: cxCustomFields: {}", cxCustomFields);
@@ -140,5 +119,95 @@ public class ProjectCommand implements Callable<Integer> {
 	} else {
 	    log.info("No valid custom fields provided");
 	}
+    }
+
+    /**
+     * Set a project's custom fields
+     * @throws CheckmarxException
+     */
+    @Command(name = "force-full-scan", description = "Indicate if a full scan is required")
+    private int forceFullScan(
+	    @Option(names = {"-d", "--duration"}, description = "The duration since the last full scan") Integer duration,
+	    @Option(names = {"-t", "--team"}, description = "The team to which the project belongs") String team,
+	    @Option(names = {"-u", "--units"}, description = "The duration units (default is days)") String units,
+	    @Parameters(paramLabel = "Project") String project
+	    ) throws CheckmarxException{
+        log.info("Calling project force-full-scan command");
+        // Currently, duration must be specified but, maybe, in the future,
+        // we will want to add other criteria for forcing a full scan which
+        // is why it is an option and not a parameter.
+        if (duration == null) {
+            throw new CheckmarxException("forceFullScan: duration must be specified");
+        }
+        CxProject cxProject = getCxProject(project, team);
+        ChronoUnit chronoUnit = ChronoUnit.DAYS;
+        if (units != null) {
+            chronoUnit = ChronoUnit.valueOf(units.toUpperCase());
+        }
+        log.debug("forceFullScan: chronoUnit: {}", chronoUnit);
+        LocalDateTime lastScanDate = cxService.getLastScanDate(cxProject.id);
+        log.info("forceFullScan: Last scan date: {}", lastScanDate);
+        if (lastScanDate == null) {
+            throw new CheckmarxException(String.format("forceFullScan: cannot find last scan date for \"%s\"", project));
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime then = now.minus(duration, chronoUnit);
+        log.debug("forceFullScan: comparing last scan date with {}", then);
+        if (then.isAfter(lastScanDate)) {
+            log.info("forceFullScan: full scan required");
+            return ExitStatus.FULL_SCAN_REQUIRED.getExitStatus();
+        } else {
+            log.info("forceFullScan: full scan not required");
+            return ExitStatus.FULL_SCAN_NOT_REQUIRED.getExitStatus();
+        }
+    }
+
+    /**
+     * Given a project name and an optional team name, return the project.
+     *
+     * @param project the project name (possibly qualified by the team name)
+     * @param team the team name
+     * @return the project
+     * @throws CheckmarxException if the project cannot be found or there are multiple matching projects
+     */
+    private CxProject getCxProject(String project, String team) throws CheckmarxException {
+	log.debug("getProject: project: {}, team: {}", project, team);
+        CxProject cxProject = null;
+
+        // If the project has been provided as <team>/<project>, split it.
+        int index = project.lastIndexOf(cxProperties.getTeamPathSeparator());
+        if (index >= 0) {
+            team = project.substring(0, index);
+            project = project.substring(index + 1);
+        }
+        log.debug("setCustomFields: project: {}, team: {}", project, team);
+
+        if (team != null) {
+            team = addTeamPathSeparatorPrefix(cxProperties, team);
+            String teamId = cxService.getTeamId(team);
+            Integer projectId = cxService.getProjectId(teamId, project);
+            cxProject = cxService.getProject(projectId);
+        } else {
+            List<CxProject> projects = cxService.getProjects();
+            if (projects.isEmpty()) {
+        	throw new CheckmarxException("getProject: no projects found");
+            }
+            for (CxProject p : projects) {
+        	if (p.name.equalsIgnoreCase(project)) {
+        	    if (cxProject == null) {
+        		cxProject = p;
+        	    } else {
+        		throw new CheckmarxException(String.format("getProject: %s: project name is not unique", project));
+        	    }
+        	}
+            }
+        }
+
+        if (cxProject == null) {
+            throw new CheckmarxException(String.format("getProject: %s: canot find project", project));
+        }
+
+        log.debug("getProject: project with id {} found", cxProject.getId());
+        return cxProject;
     }
 }
