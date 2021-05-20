@@ -1,5 +1,5 @@
 # Java Utility for Checkmarx
- _Built leveraging the Checkmarx Spring boot SDK found here -> https://github.com/checkmarx-ts/checkmarx-spring-boot-java-sdk_
+ _Built leveraging the Checkmarx Spring boot SDK found here -> https://github.com/checkmarx-ltd/checkmarx-spring-boot-java-sdk_
 
 Initial implementation is for Team Creation and Ldap Management.  More to follow.
 
