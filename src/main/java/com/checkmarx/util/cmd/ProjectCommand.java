@@ -38,7 +38,7 @@ public class ProjectCommand implements Callable<Integer> {
 
     public enum ExitStatus {
 	FULL_SCAN_REQUIRED(0),
-	FULL_SCAN_NOT_REQUIRED(2);
+	FULL_SCAN_NOT_REQUIRED(1);
 	private int exitStatus;
 	public int getExitStatus() {
 	    return exitStatus;
