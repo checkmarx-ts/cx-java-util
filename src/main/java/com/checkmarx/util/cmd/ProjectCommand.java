@@ -171,7 +171,7 @@ public class ProjectCommand implements Callable<Integer> {
      * @throws CheckmarxException if the project cannot be found or there are multiple matching projects
      */
     private CxProject getCxProject(String project, String team) throws CheckmarxException {
-	log.debug("getProject: project: {}, team: {}", project, team);
+	log.debug("getCxProject: project: {}, team: {}", project, team);
         CxProject cxProject = null;
 
         // If the project has been provided as <team>/<project>, split it.
@@ -180,7 +180,7 @@ public class ProjectCommand implements Callable<Integer> {
             team = project.substring(0, index);
             project = project.substring(index + 1);
         }
-        log.debug("setCustomFields: project: {}, team: {}", project, team);
+        log.debug("getCxProject: project: {}, team: {}", project, team);
 
         if (team != null) {
             team = addTeamPathSeparatorPrefix(cxProperties, team);
@@ -190,24 +190,24 @@ public class ProjectCommand implements Callable<Integer> {
         } else {
             List<CxProject> projects = cxService.getProjects();
             if (projects.isEmpty()) {
-        	throw new CheckmarxException("getProject: no projects found");
+        	throw new CheckmarxException("getCxProject: no projects found");
             }
             for (CxProject p : projects) {
         	if (p.name.equalsIgnoreCase(project)) {
         	    if (cxProject == null) {
         		cxProject = p;
         	    } else {
-        		throw new CheckmarxException(String.format("getProject: %s: project name is not unique", project));
+        		throw new CheckmarxException(String.format("getCxProject: %s: project name is not unique", project));
         	    }
         	}
             }
         }
 
         if (cxProject == null) {
-            throw new CheckmarxException(String.format("getProject: %s: canot find project", project));
+            throw new CheckmarxException(String.format("getCxProject: %s: canot find project", project));
         }
 
-        log.debug("getProject: project with id {} found", cxProject.getId());
+        log.debug("getCxProject: project with id {} found", cxProject.getId());
         return cxProject;
     }
 }
