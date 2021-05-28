@@ -139,7 +139,22 @@ public class ProjectCommand implements Callable<Integer> {
         if (duration == null) {
             throw new CheckmarxException("forceFullScan: duration must be specified");
         }
-        CxProject cxProject = getCxProject(project, team);
+        List<CxProject> cxProjects = getCxProjects(project, team);
+        CxProject cxProject = null;
+        switch (cxProjects.size()) {
+        case 0:
+            // The assumption is that this program is being called as part of
+            // a larger process that will create the project if it does not
+            // exist in which case, by definition, it will not hae been scanned
+            // and so a full scan will be required.
+            log.info("forceFullScan: project not found: full scan required");
+            return ExitStatus.FULL_SCAN_REQUIRED.getExitStatus();
+        case 1:
+            cxProject = cxProjects.get(0);
+            break;
+        default:
+            throw new CheckmarxException();
+        }
         ChronoUnit chronoUnit = ChronoUnit.DAYS;
         if (units != null) {
             chronoUnit = ChronoUnit.valueOf(units.toUpperCase());
@@ -148,7 +163,8 @@ public class ProjectCommand implements Callable<Integer> {
         LocalDateTime lastScanDate = cxService.getLastScanDate(cxProject.id);
         log.info("forceFullScan: Last scan date: {}", lastScanDate);
         if (lastScanDate == null) {
-            throw new CheckmarxException(String.format("forceFullScan: cannot find last scan date for \"%s\"", project));
+            log.info("forceFullScan: no last scan date: full scan required");
+            return ExitStatus.FULL_SCAN_REQUIRED.getExitStatus();
         }
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime then = now.minus(duration, chronoUnit);
@@ -173,6 +189,32 @@ public class ProjectCommand implements Callable<Integer> {
     private CxProject getCxProject(String project, String team) throws CheckmarxException {
 	log.debug("getCxProject: project: {}, team: {}", project, team);
         CxProject cxProject = null;
+        List<CxProject> projects = getCxProjects(project, team);
+        switch (projects.size()) {
+        case 0:
+            throw new CheckmarxException("getCxProject: no projects found");
+        case 1:
+            cxProject = projects.get(0);
+            break;
+        default:
+            throw new CheckmarxException(String.format("getCxProject: %s: project name is not unique", project));
+        }
+
+        log.debug("getCxProject: project with id {} found", cxProject.getId());
+        return cxProject;
+    }
+
+    /**
+     * Given a project name and an optional team name, return the project.
+     *
+     * @param project the project name (possibly qualified by the team name)
+     * @param team the team name
+     * @return the project
+     * @throws CheckmarxException if the project cannot be found or there are multiple matching projects
+     */
+    private List<CxProject> getCxProjects(String project, String team) throws CheckmarxException {
+	log.debug("getCxProjects: project: {}, team: {}", project, team);
+        CxProject cxProject = null;
 
         // If the project has been provided as <team>/<project>, split it.
         int index = project.lastIndexOf(cxProperties.getTeamPathSeparator());
@@ -180,34 +222,23 @@ public class ProjectCommand implements Callable<Integer> {
             team = project.substring(0, index);
             project = project.substring(index + 1);
         }
-        log.debug("getCxProject: project: {}, team: {}", project, team);
+        log.debug("getCxProjects: project: {}, team: {}", project, team);
 
+        List<CxProject> cxProjects;
         if (team != null) {
             team = addTeamPathSeparatorPrefix(cxProperties, team);
             String teamId = cxService.getTeamId(team);
             Integer projectId = cxService.getProjectId(teamId, project);
             cxProject = cxService.getProject(projectId);
+            cxProjects = new ArrayList<>();
+            if (cxProject != null) {
+        	cxProjects.add(cxProject);
+            }
         } else {
-            List<CxProject> projects = cxService.getProjects();
-            if (projects.isEmpty()) {
-        	throw new CheckmarxException("getCxProject: no projects found");
-            }
-            for (CxProject p : projects) {
-        	if (p.name.equalsIgnoreCase(project)) {
-        	    if (cxProject == null) {
-        		cxProject = p;
-        	    } else {
-        		throw new CheckmarxException(String.format("getCxProject: %s: project name is not unique", project));
-        	    }
-        	}
-            }
+            cxProjects = cxService.getProjects();
         }
 
-        if (cxProject == null) {
-            throw new CheckmarxException(String.format("getCxProject: %s: canot find project", project));
-        }
-
-        log.debug("getCxProject: project with id {} found", cxProject.getId());
-        return cxProject;
+        log.debug("getCxProjects: found {} matching projects", cxProjects.size());
+        return cxProjects;
     }
 }
