@@ -72,6 +72,10 @@ public class ProjectCommand implements Callable<Integer> {
 
     /**
      * Set a project's custom fields
+     * @param strict fail if an unrecognized custom field is supplied
+     * @param team the team to which the project belongs
+     * @param units the units by which the duration is measured (if null, days are used)
+     * @param project the project
      * @throws CheckmarxException
      */
     @Command(name = "set-custom-fields", description = "Set a project's custom fields")
@@ -122,8 +126,13 @@ public class ProjectCommand implements Callable<Integer> {
     }
 
     /**
-     * Set a project's custom fields
-     * @throws CheckmarxException
+     * Check whether a full scan should be forced for the specified project.
+     *
+     * @param duration the maximum amount of elapsed time since the last full scan
+     * @param team the team to which the project belongs
+     * @param units the units by which the duration is measured (if null, days are used)
+     * @param project the project
+     * @throws CheckmarxException if more than one matching project is found
      */
     @Command(name = "force-full-scan", description = "Indicate if a full scan is required")
     private int forceFullScan(
@@ -205,12 +214,13 @@ public class ProjectCommand implements Callable<Integer> {
     }
 
     /**
-     * Given a project name and an optional team name, return the project.
+     * Given a project name and an optional team name, return a list of
+     * matching projects.
      *
      * @param project the project name (possibly qualified by the team name)
      * @param team the team name
-     * @return the project
-     * @throws CheckmarxException if the project cannot be found or there are multiple matching projects
+     * @return the list of projects (which may be empty)
+     * @throws CheckmarxException if the underying SDK throws this exception
      */
     private List<CxProject> getCxProjects(String project, String team) throws CheckmarxException {
 	log.debug("getCxProjects: project: {}, team: {}", project, team);
