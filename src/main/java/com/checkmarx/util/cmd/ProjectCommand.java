@@ -3,6 +3,7 @@ package com.checkmarx.util.cmd;
 import com.checkmarx.sdk.config.CxProperties;
 import com.checkmarx.sdk.dto.cx.CxCustomField;
 import com.checkmarx.sdk.dto.cx.CxProject;
+import com.checkmarx.sdk.dto.cx.CxTeam;
 import com.checkmarx.sdk.exception.CheckmarxException;
 import com.checkmarx.sdk.service.CxService;
 import org.slf4j.Logger;
@@ -32,6 +33,8 @@ public class ProjectCommand implements Callable<Integer> {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(ProjectCommand.class);
     private final CxService cxService;
     private final CxProperties cxProperties;
+
+    private final static String UNKNOWN_TEAM = "-1";
 
     @Spec
     private CommandSpec spec;
@@ -237,7 +240,10 @@ public class ProjectCommand implements Callable<Integer> {
         List<CxProject> cxProjects;
         if (team != null) {
             team = addTeamPathSeparatorPrefix(cxProperties, team);
-            String teamId = cxService.getTeamId(team);
+            String teamId = getTeamId(team);
+            if (UNKNOWN_TEAM.equals(teamId)) {
+        	throw new CheckmarxException(String.format("getCxProjects: %s: no matching team", team));
+            }
             Integer projectId = cxService.getProjectId(teamId, project);
             cxProject = cxService.getProject(projectId);
             cxProjects = new ArrayList<>();
@@ -250,5 +256,25 @@ public class ProjectCommand implements Callable<Integer> {
 
         log.debug("getCxProjects: found {} matching projects", cxProjects.size());
         return cxProjects;
+    }
+
+    private String getTeamId(String teamPath) throws CheckmarxException {
+        try {
+            List<CxTeam> teams = cxService.getTeams();
+            if (teams == null) {
+                throw new CheckmarxException("Error obtaining Team Id");
+            }
+            for (CxTeam team : teams) {
+                if (team.getFullName().equalsIgnoreCase(teamPath)) {
+                    log.debug("getTeamId: found team {} with ID {}", teamPath, team.getId());
+                    return team.getId();
+                }
+            }
+        } catch (Exception e) {
+            log.error("getTeamId: error retrieving teams", e);
+        }
+        log.info("No team was found for {}", teamPath);
+        return UNKNOWN_TEAM;
+
     }
 }
