@@ -20,7 +20,7 @@ The **set-custom-fields** sub-command sets the values of the specified
 project’s custom fields.
 
 The `-s` (or `--strict`) command line option causes the
-**set-custom-fields** sub-command to fail if an unecognised custom
+**set-custom-fields** sub-command to fail if an unrecognised custom
 field is provided (by default, a message is logged and the
 unrecognised field is ignored).
 
@@ -44,7 +44,7 @@ unit of time.
 
 The assumption is that the **cx-java-util** program will be invoked as
 part of a larger process which, if the project does not exist, will
-create i. For this reason, an error is not signalled if the project
+create it. For this reason, an error is not signalled if the project
 does not exist.
 
 ```
