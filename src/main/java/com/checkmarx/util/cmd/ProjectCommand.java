@@ -34,7 +34,9 @@ public class ProjectCommand implements Callable<Integer> {
     private final CxService cxService;
     private final CxProperties cxProperties;
 
-    private final static String UNKNOWN_TEAM = "-1";
+    // In some cases the SDK returns an integer, in others a string ...
+    private final static int UNKNOWN_INT = -1;
+    private final static String UNKNOWN_STR = "-1";
 
     @Spec
     private CommandSpec spec;
@@ -241,10 +243,13 @@ public class ProjectCommand implements Callable<Integer> {
         if (team != null) {
             team = addTeamPathSeparatorPrefix(cxProperties, team);
             String teamId = getTeamId(team);
-            if (UNKNOWN_TEAM.equals(teamId)) {
+            if (UNKNOWN_STR.equals(teamId)) {
         	throw new CheckmarxException(String.format("getCxProjects: %s: no matching team", team));
             }
             Integer projectId = cxService.getProjectId(teamId, project);
+            if (UNKNOWN_INT == projectId) {
+                throw new CheckmarxException(String.format("getCxProjects: %s: no matching project", project));
+            }
             cxProject = cxService.getProject(projectId);
             cxProjects = new ArrayList<>();
             if (cxProject != null) {
@@ -274,7 +279,7 @@ public class ProjectCommand implements Callable<Integer> {
             log.error("getTeamId: error retrieving teams", e);
         }
         log.info("No team was found for {}", teamPath);
-        return UNKNOWN_TEAM;
+        return UNKNOWN_STR;
 
     }
 }
