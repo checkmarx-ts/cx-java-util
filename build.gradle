@@ -24,10 +24,6 @@ signing {
 	sign configurations.archives
 }
 
-
-// Deploying
-apply plugin: 'maven'
-
 // Add Javadoc JAR and sources JAR to artifact
 task javadocJar(type: Jar) {
 	classifier = 'javadoc'
@@ -46,53 +42,3 @@ group = 'com.checkmarx-ts.util'
 archivesBaseName = "cx-java-util"
 version = '0.3.0-rc5'
 sourceCompatibility = '1.8'
-
-// Build, sign, and upload
-uploadArchives {
-	repositories {
-		mavenDeployer {
-
-			// Sign POM
-			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-			// Destination
-			repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-				authentication(userName: ossrhUsername, password: ossrhPassword)
-			}
-			snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-				authentication(userName: ossrhUsername, password: ossrhPassword)
-			}
-
-			// Add required metadata to POM
-			pom.project {
-				name 'Checkmarx Java Utils'
-				packaging 'jar'
-				description 'Checkmarx java command line utility'
-				url 'https://github.com/checkmarx-ts/cx-java-util'
-
-				scm {
-					connection 'scm:git:git://github.com/checkmarx-ts/cx-java-util.git'
-					developerConnection 'scm:git:ssh://github.com/checkmarx-ts/cx-java-util.git'
-					url 'http://github.com/checkmarx-ts/cx-java-util/tree/master'
-				}
-
-				licenses {
-					license {
-						name 'GNU General Public License, version 3'
-						url 'http://www.gnu.org/licenses/gpl-3.0.txt'
-					}
-				}
-
-				developers {
-					developer {
-						id 'kmcdon83'
-						name 'Ken McDonald'
-						email 'ken.mcdonald@checkmarx.com'
-						organization 'Checkmarx-ts'
-						organizationUrl 'www.checkmarx.com'
-					}
-				}
-			}
-		}
-	}
-}
