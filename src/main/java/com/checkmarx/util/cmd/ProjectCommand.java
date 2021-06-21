@@ -246,14 +246,13 @@ public class ProjectCommand implements Callable<Integer> {
             if (UNKNOWN_STR.equals(teamId)) {
         	throw new CheckmarxException(String.format("getCxProjects: %s: no matching team", team));
             }
-            Integer projectId = cxService.getProjectId(teamId, project);
-            if (UNKNOWN_INT == projectId) {
-                throw new CheckmarxException(String.format("getCxProjects: %s: no matching project", project));
-            }
-            cxProject = cxService.getProject(projectId);
             cxProjects = new ArrayList<>();
-            if (cxProject != null) {
-        	cxProjects.add(cxProject);
+            Integer projectId = cxService.getProjectId(teamId, project);
+            if (UNKNOWN_INT != projectId) {
+                cxProject = cxService.getProject(projectId);
+                if (cxProject != null) {
+            	   cxProjects.add(cxProject);
+                }
             }
         } else {
             cxProjects = cxService.getProjects();
