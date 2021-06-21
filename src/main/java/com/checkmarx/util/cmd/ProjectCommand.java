@@ -206,7 +206,7 @@ public class ProjectCommand implements Callable<Integer> {
         List<CxProject> projects = getCxProjects(project, team);
         switch (projects.size()) {
         case 0:
-            throw new CheckmarxException("getCxProject: no projects found");
+            throw new CheckmarxException(String.format("getCxProject: %s: no matching project", project));
         case 1:
             cxProject = projects.get(0);
             break;
