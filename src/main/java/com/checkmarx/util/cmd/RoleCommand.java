@@ -16,7 +16,7 @@ import java.util.concurrent.Callable;
 
 
 /**
- * Command for Role Ldap Mapping based operations within Checkmarx
+ * Command for role LDAP mapping based operations within Checkmarx
  */
 @Component
 @Command(name = "role")
@@ -53,7 +53,7 @@ public class RoleCommand implements Callable<Integer> {
     }
 
     /**
-     * Map a ldap group dn to a role
+     * Map an LDAP group dn to a role
      * @throws CheckmarxException
      */
     @Command(name = "add-ldap")
@@ -72,21 +72,21 @@ public class RoleCommand implements Callable<Integer> {
             Integer serverId = cxService.getLdapServerId(ldapServer);
             if(serverId > 0) {
                 cxService.mapRoleLdap(serverId, roleId, ldapDn);
-                log.info("Ldap mapping {} has been added to role {}", ldapDn, role);
+                log.info("LDAP mapping {} has been added to role {}", ldapDn, role);
             }
             else {
-                log.error("Ldap Server {} not found ", ldapServer);
-                throw new CheckmarxException("Ldap Server not found");
+                log.error("LDAP Server {} not found ", ldapServer);
+                throw new CheckmarxException("LDAP Server not found");
             }
         }
         else{
-            log.error("No Ldap Server provided");
-            throw new CheckmarxException("Ldap Server not provided");
+            log.error("No LDAP Server provided");
+            throw new CheckmarxException("LDAP Server not provided");
         }
     }
 
     /**
-     * Remove an Ldap dn mapping for a role
+     * Remove an LDAP dn mapping for a role
      * @throws CheckmarxException
      */
     @Command(name = "remove-ldap")
@@ -105,16 +105,16 @@ public class RoleCommand implements Callable<Integer> {
             Integer serverId = cxService.getLdapServerId(ldapServer);
             if(serverId > 0) {
                 cxService.removeRoleLdap(serverId, roleId, ldapDn);
-                log.info("Ldap mapping {} has been removed from role {}", ldapDn, role);
+                log.info("LDAP mapping {} has been removed from role {}", ldapDn, role);
             }
             else {
-                log.error("Ldap Server {} not found ", ldapServer);
-                throw new CheckmarxException("Ldap Server not found");
+                log.error("LDAP Server {} not found ", ldapServer);
+                throw new CheckmarxException("LDAP Server not found");
             }
         }
         else{
-            log.error("No Ldap Server provided");
-            throw new CheckmarxException("Ldap Server not provided");
+            log.error("No LDAP Server provided");
+            throw new CheckmarxException("LDAP Server not provided");
         }
     }
 }

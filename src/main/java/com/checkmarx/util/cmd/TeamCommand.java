@@ -54,7 +54,7 @@ public class TeamCommand implements Callable<Integer> {
     }
 
     /**
-     * Map a team to an ldap group dn
+     * Map a team to an LDAP group dn
      * If the team does not exist, and the the create flag is set, it will be created first
      * @throws CheckmarxException
      */
@@ -81,21 +81,21 @@ public class TeamCommand implements Callable<Integer> {
             Integer serverId = cxService.getLdapServerId(ldapServer);
             if(serverId > 0) {
                 cxService.mapTeamLdapWS(serverId, teamId, teamName, addLdapDn);
-                log.info("Ldap mapping {} has been added to team {}", addLdapDn, team);
+                log.info("LDAP mapping {} has been added to team {}", addLdapDn, team);
             }
             else {
-                log.error("Ldap Server {} not found ", ldapServer);
-                throw new CheckmarxException("Ldap Server not found");
+                log.error("LDAP Server {} not found ", ldapServer);
+                throw new CheckmarxException("LDAP Server not found");
             }
         }
         else{
-            log.error("No Ldap Server provided");
-            throw new CheckmarxException("Ldap Server not provided");
+            log.error("No LDAP Server provided");
+            throw new CheckmarxException("LDAP Server not provided");
         }
     }
 
     /**
-     * Remove an Ldap groupd dn mapping for a team
+     * Remove an LDAP group dn mapping for a team
      * @throws CheckmarxException
      */
     @Command(name = "remove-ldap")
@@ -116,16 +116,16 @@ public class TeamCommand implements Callable<Integer> {
             Integer serverId = cxService.getLdapServerId(ldapServer);
             if(serverId > 0) {
                 cxService.removeTeamLdapWS(serverId, teamId, teamName, addLdapDn);
-                log.info("Ldap mapping {} has been removed from team {}", addLdapDn, team);
+                log.info("LDAP mapping {} has been removed from team {}", addLdapDn, team);
             }
             else {
-                log.error("Ldap Server {} not found ", ldapServer);
-                throw new CheckmarxException("Ldap Server not found");
+                log.error("LDAP Server {} not found ", ldapServer);
+                throw new CheckmarxException("LDAP Server not found");
             }
         }
         else{
-            log.error("No Ldap Server provided");
-            throw new CheckmarxException("Ldap Server not provided");
+            log.error("No LDAP Server provided");
+            throw new CheckmarxException("LDAP Server not provided");
         }
     }
 
