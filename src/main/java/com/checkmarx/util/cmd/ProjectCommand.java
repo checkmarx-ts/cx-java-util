@@ -225,7 +225,7 @@ public class ProjectCommand implements Callable<Integer> {
      * @param project the project name (possibly qualified by the team name)
      * @param team the team name
      * @return the list of projects (which may be empty)
-     * @throws CheckmarxException if the underying SDK throws this exception
+     * @throws CheckmarxException if the underlying SDK throws this exception
      */
     private List<CxProject> getCxProjects(String project, String team) throws CheckmarxException {
 	log.debug("getCxProjects: project: {}, team: {}", project, team);
