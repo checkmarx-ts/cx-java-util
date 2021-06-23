@@ -14,6 +14,6 @@ public class CheckmarxUtilApplication {
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication(CheckmarxUtilApplication.class);
 		app.setWebApplicationType(WebApplicationType.NONE);
-		SpringApplication.exit(app.run(args));
+		System.exit(SpringApplication.exit(app.run(args)));
 	}
 }

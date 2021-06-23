@@ -1,5 +1,6 @@
 package com.checkmarx.util;
 
+import com.checkmarx.util.cmd.ProjectCommand;
 import com.checkmarx.util.cmd.RoleCommand;
 import com.checkmarx.util.cmd.TeamCommand;
 import org.slf4j.Logger;
@@ -7,50 +8,61 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
-import picocli.CommandLine.IFactory;
-
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Spec;
 import java.util.Arrays;
-import java.util.List;
-
-import static java.lang.System.exit;
+import java.util.concurrent.Callable;
 
 @Component
-public class CheckmarxUtilRunner implements CommandLineRunner, ExitCodeGenerator {
+@Command(name = "java -jar <util jar>")
+public class CheckmarxUtilRunner implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(CheckmarxUtilRunner.class);
-    private final CommandLine.IFactory factory;
-    private final TeamCommand teamCommand;
+    private final ProjectCommand projectCommand;
     private final RoleCommand roleCommand;
+    private final TeamCommand teamCommand;
     private int exitCode = 0;
 
-    public CheckmarxUtilRunner(IFactory factory, TeamCommand teamCommand, RoleCommand roleCommand) {
-        this.factory = factory;
-        this.teamCommand = teamCommand;
-        this.roleCommand = roleCommand;
+    @Spec
+    private CommandSpec spec;
+
+    public CheckmarxUtilRunner(ProjectCommand projectCommand, RoleCommand roleCommand, TeamCommand teamCommand) {
+	this.projectCommand = projectCommand;
+	this.roleCommand = roleCommand;
+	this.teamCommand = teamCommand;
     }
 
     @Override
     public void run(String[] args) {
-        if(args == null && args.length == 0) {
-            exitCode = -1;
-            exit(-1);
-        }
-        List<String> argsList = Arrays.asList(args);
-        /*Team Command*/
+	log.debug("run: starting");
 
-        if(argsList.contains("-command=team") || argsList.contains("--command=team")){
-            exitCode = new CommandLine(teamCommand, factory).execute(args);
-        }
-        else if(argsList.contains("-command=role") || argsList.contains("--command=role")){
-            exitCode = new CommandLine(roleCommand, factory).execute(args);
-        }
-        else{
-            log.info("No valid option given");
-        }
+	// Strip out arguments used to configure the SDK
+	args = Arrays.stream(args)
+		.filter(s -> !s.startsWith("--checkmarx."))
+		.toArray(String[]::new);
+
+        exitCode = new CommandLine(this)
+        	.addSubcommand(projectCommand)
+        	.addSubcommand(roleCommand)
+        	.addSubcommand(teamCommand)
+        	.execute(args);
     }
 
     @Override
     public int getExitCode() {
         return exitCode;
+    }
+
+    /**
+     * Dummy implementation of the call method to implement the Callable
+     * interface.
+     *
+     * @return CommandLine.ExitCode.USAGE
+     */
+    @Override
+    public Integer call() {
+	CommandLine.usage(spec, System.err);
+	return CommandLine.ExitCode.USAGE;
     }
 }
 
