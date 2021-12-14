@@ -167,7 +167,7 @@ public class ProjectCommand implements Callable<Integer> {
             cxProject = cxProjects.get(0);
             break;
         default:
-            throw new CheckmarxException();
+            throw new CheckmarxException(String.format("Expected zero or one matches for \"%s\" (found %d)", project, cxProjects.size()));
         }
         ChronoUnit chronoUnit = ChronoUnit.DAYS;
         if (units != null) {
