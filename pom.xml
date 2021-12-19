@@ -10,13 +10,13 @@
 	</parent>
 	<groupId>com.github.checkmarx-ts</groupId>
 	<artifactId>cx-java-util</artifactId>
-	<version>0.3.2</version>
+	<version>0.3.3</version>
 	<name>cx-java-util</name>
 	<description>Checkmarx Java Commandline Utility</description>
 
 	<properties>
 		<java.version>1.8</java.version>
-		<log4j2.version>2.16.0</log4j2.version>
+		<log4j2.version>2.17.0</log4j2.version>
 		<skipTests>false</skipTests>
 	</properties>
 

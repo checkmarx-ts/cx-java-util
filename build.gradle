@@ -40,8 +40,8 @@ artifacts {
 // Configure group ID, artifact ID, and version
 group = 'com.checkmarx-ts.util'
 archivesBaseName = "cx-java-util"
-version = '0.3.2'
+version = '0.3.3'
 sourceCompatibility = '1.8'
 
 // Temporary fix for CVE-2021-44228 (see https://spring.io/blog/2021/12/10/log4j2-vulnerability-and-spring-boot)
-ext['log4j2.version'] = '2.16.0'
+ext['log4j2.version'] = '2.17.0'
