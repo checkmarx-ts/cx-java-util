@@ -70,21 +70,34 @@ public class ScanCommand {
             @Option(names = {"-g", "--gitUrl"}, description = "The Git repository URL") String gitUrl,
             @Option(names = {"-i", "--incremental"}, description = "Perform an incremental scan") Boolean incrementalScan,
             @Option(names = {"-p", "--private"}, description = "Create a private scan") Boolean privateScan,
+            @Option(names = {"--project-custom-field"}, description = "A project-level custom field") String[] projectCustomFields,
+            @Option(names = {"--scan-custom-field"}, description = "A scan-level custom field") String[] scanCustomFields,
             @Option(names = {"-t", "--team"}, description = "The team the project is assigned to") String team,
-            @Parameters(paramLabel = "Project", description = "The project name, optionally qualified by the team") String project,
-            @Parameters(paramLabel = "Custom Field", arity = "0..*", description = "One or more name=value pairs") String[] customFields
+            @Parameters(paramLabel = "Project", description = "The project name, optionally qualified by the team") String project
     ) throws CheckmarxException {
         log.info("Calling the scan create command");
-        log.debug("createScan: team: {}, project: {}, customfields: {}",
-                team, project, customFields);
-        Map<String, String> customFieldMap = new HashMap<>();
-        if (customFields != null) {
-            for (String customField : customFields) {
-                String[] nvp = customField.split("=", 2);
+        log.debug("createScan: team: {}, project: {}, projectCustomfields: {}, scanCustomFields: {}",
+                team, project, projectCustomFields, scanCustomFields);
+        Map<String, String> projectCustomFieldMap = new HashMap<>();
+        if (projectCustomFields != null) {
+            for (String customField : projectCustomFields) {
+                String[] nvp = customField.split(":", 2);
                 if (nvp.length != 2) {
+                    log.warn("{}: ignoring invalid custom field", customField);
                     continue;
                 }
-                customFieldMap.put(nvp[0], nvp[1]);
+                projectCustomFieldMap.put(nvp[0], nvp[1]);
+            }
+        }
+        Map<String, String> scanCustomFieldMap = new HashMap<>();
+        if (scanCustomFields != null) {
+            for (String customField : scanCustomFields) {
+                String[] nvp = customField.split(":", 2);
+                if (nvp.length != 2) {
+                    log.warn("{}: ignoring invalid custom field", customField);
+                    continue;
+                }
+                scanCustomFieldMap.put(nvp[0], nvp[1]);
             }
         }
         CxScanParams cxScanParams = new CxScanParams();
@@ -111,7 +124,12 @@ public class ScanCommand {
         if (privateScan != null && privateScan) {
             cxScanParams.setPublic(false);
         }
-        cxScanParams.setCustomFields(customFieldMap);
+        cxScanParams.setCustomFields(projectCustomFieldMap);
+        log.debug("Setting scanCustomFields to {}", scanCustomFieldMap);
+        cxScanParams.setScanCustomFields(scanCustomFieldMap);
+        if (comment == null) {
+            comment = "Scan created by cx-java-util";
+        }
         cxService.createScan(cxScanParams, comment);
     }
 }
