@@ -10,14 +10,12 @@
 	</parent>
 	<groupId>com.github.checkmarx-ts</groupId>
 	<artifactId>cx-java-util</artifactId>
-	<version>0.3.4</version>
+	<version>0.3.5</version>
 	<name>cx-java-util</name>
 	<description>Checkmarx Java Commandline Utility</description>
 
 	<properties>
 		<java.version>1.8</java.version>
-		<!-- Temporary fix for CVE-2021-44832 -->
-		<log4j2.version>2.17.1</log4j2.version>
 		<skipTests>false</skipTests>
 	</properties>
 
@@ -29,12 +27,12 @@
 		<dependency>
 			<groupId>com.github.checkmarx-ltd</groupId>
 			<artifactId>cx-spring-boot-sdk</artifactId>
-			<version>0.4.99</version>
+			<version>0.5.14</version>
 		</dependency>
 		<dependency>
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli-spring-boot-starter</artifactId>
-			<version>4.6.1</version>
+			<version>4.6.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
