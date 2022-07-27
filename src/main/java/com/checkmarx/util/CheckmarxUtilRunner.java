@@ -1,6 +1,7 @@
 package com.checkmarx.util;
 
 import com.checkmarx.util.cmd.ProjectCommand;
+import com.checkmarx.util.cmd.ResultsCommand;
 import com.checkmarx.util.cmd.RoleCommand;
 import com.checkmarx.util.cmd.TeamCommand;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import java.util.concurrent.Callable;
 public class CheckmarxUtilRunner implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(CheckmarxUtilRunner.class);
     private final ProjectCommand projectCommand;
+    private final ResultsCommand reportCommand;
     private final RoleCommand roleCommand;
     private final TeamCommand teamCommand;
     private int exitCode = 0;
@@ -26,8 +28,10 @@ public class CheckmarxUtilRunner implements Callable<Integer>, CommandLineRunner
     @Spec
     private CommandSpec spec;
 
-    public CheckmarxUtilRunner(ProjectCommand projectCommand, RoleCommand roleCommand, TeamCommand teamCommand) {
+    public CheckmarxUtilRunner(ProjectCommand projectCommand, ResultsCommand reportCommand, RoleCommand roleCommand,
+                               TeamCommand teamCommand) {
 	this.projectCommand = projectCommand;
+    this.reportCommand = reportCommand;
 	this.roleCommand = roleCommand;
 	this.teamCommand = teamCommand;
     }
@@ -42,10 +46,11 @@ public class CheckmarxUtilRunner implements Callable<Integer>, CommandLineRunner
 		.toArray(String[]::new);
 
         exitCode = new CommandLine(this)
-        	.addSubcommand(projectCommand)
-        	.addSubcommand(roleCommand)
-        	.addSubcommand(teamCommand)
-        	.execute(args);
+            .addSubcommand(projectCommand)
+            .addSubcommand(reportCommand)
+            .addSubcommand(roleCommand)
+            .addSubcommand(teamCommand)
+            .execute(args);
     }
 
     @Override
