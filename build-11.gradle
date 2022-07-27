@@ -1,0 +1,50 @@
+plugins {
+	id 'org.springframework.boot' version '2.6.7'
+	id 'java'
+}
+
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'java'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'com.github.checkmarx-ltd:cx-spring-boot-sdk:0.5.16'
+	implementation 'info.picocli:picocli-spring-boot-starter:4.6.3'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+        implementation 'com.sun.xml.bind:jaxb-impl:2.4.0-b180830.0438'
+        implementation 'com.sun.xml.bind:jaxb-core:2.3.0.1'
+}
+
+configurations {
+	libsDirName = 'libs/java11'
+}
+
+// Signing
+apply plugin: 'signing'
+signing {
+	sign configurations.archives
+}
+
+// Add Javadoc JAR and sources JAR to artifact
+task javadocJar(type: Jar) {
+	classifier = 'javadoc'
+	from javadoc
+}
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+artifacts {
+	archives javadocJar, sourcesJar
+}
+
+// Configure group ID, artifact ID, and version
+group = 'com.checkmarx-ts.util'
+archivesBaseName = "cx-java-util"
+version = '0.4.0-SNAPSHOT'
+sourceCompatibility = '1.8'
