@@ -32,16 +32,17 @@ public class ResultsCommand {
     private final CxService cxService;
     private final CxProperties cxProperties;
 
-    public enum OutputFormat
-    {
+    public enum OutputFormat {
         JSON
     }
 
     @Spec
     private CommandSpec spec;
+
     /**
      * ResultsCommand Constructor for results operations against Checkmarx
-     * @param cxService the SDK client
+     *
+     * @param cxService    the SDK client
      * @param cxProperties the SDK configuration
      */
     public ResultsCommand(CxService cxService, CxProperties cxProperties) {
@@ -66,6 +67,7 @@ public class ResultsCommand {
 
     /**
      * Retrieve a report
+     *
      * @param reportId the report identifier
      * @throws CheckmarxException if the SDK throws an exception
      */

@@ -30,27 +30,27 @@ public class CheckmarxUtilRunner implements Callable<Integer>, CommandLineRunner
 
     public CheckmarxUtilRunner(ProjectCommand projectCommand, ResultsCommand reportCommand, RoleCommand roleCommand,
                                TeamCommand teamCommand) {
-	this.projectCommand = projectCommand;
-    this.reportCommand = reportCommand;
-	this.roleCommand = roleCommand;
-	this.teamCommand = teamCommand;
+        this.projectCommand = projectCommand;
+        this.reportCommand = reportCommand;
+        this.roleCommand = roleCommand;
+        this.teamCommand = teamCommand;
     }
 
     @Override
     public void run(String[] args) {
-	log.debug("run: starting");
+        log.debug("run: starting");
 
-	// Strip out arguments used to configure the SDK
-	args = Arrays.stream(args)
-		.filter(s -> !s.startsWith("--checkmarx."))
-		.toArray(String[]::new);
+        // Strip out arguments used to configure the SDK
+        args = Arrays.stream(args)
+                .filter(s -> !s.startsWith("--checkmarx."))
+                .toArray(String[]::new);
 
         exitCode = new CommandLine(this)
-            .addSubcommand(projectCommand)
-            .addSubcommand(reportCommand)
-            .addSubcommand(roleCommand)
-            .addSubcommand(teamCommand)
-            .execute(args);
+                .addSubcommand(projectCommand)
+                .addSubcommand(reportCommand)
+                .addSubcommand(roleCommand)
+                .addSubcommand(teamCommand)
+                .execute(args);
     }
 
     @Override
@@ -66,10 +66,7 @@ public class CheckmarxUtilRunner implements Callable<Integer>, CommandLineRunner
      */
     @Override
     public Integer call() {
-	CommandLine.usage(spec, System.err);
-	return CommandLine.ExitCode.USAGE;
+        CommandLine.usage(spec, System.err);
+        return CommandLine.ExitCode.USAGE;
     }
 }
-
-
-
