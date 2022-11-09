@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '2.6.7'
+	id 'org.springframework.boot' version '2.7.5'
 	id 'java'
 }
 
@@ -13,8 +13,8 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'com.github.checkmarx-ltd:cx-spring-boot-sdk:0.5.21'
-	implementation 'info.picocli:picocli-spring-boot-starter:4.6.3'
+	implementation 'com.github.checkmarx-ltd:cx-spring-boot-sdk:0.5.29'
+	implementation 'info.picocli:picocli-spring-boot-starter:4.7.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
         implementation 'com.sun.xml.bind:jaxb-impl:2.4.0-b180830.0438'
