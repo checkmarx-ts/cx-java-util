@@ -41,5 +41,5 @@ artifacts {
 // Configure group ID, artifact ID, and version
 group = 'com.checkmarx-ts.util'
 archivesBaseName = "cx-java-util"
-version = '0.4.0-SNAPSHOT'
+version = '0.4.0-rc1'
 sourceCompatibility = '1.8'
