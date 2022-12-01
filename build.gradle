@@ -18,24 +18,10 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-
 // Signing
 apply plugin: 'signing'
 signing {
 	sign configurations.archives
-}
-
-// Add Javadoc JAR and sources JAR to artifact
-task javadocJar(type: Jar) {
-	classifier = 'javadoc'
-	from javadoc
-}
-task sourcesJar(type: Jar) {
-	classifier = 'sources'
-	from sourceSets.main.allSource
-}
-artifacts {
-	archives javadocJar, sourcesJar
 }
 
 // Configure group ID, artifact ID, and version
