@@ -42,19 +42,23 @@ public class ProjectCommand implements Callable<Integer> {
     private CommandSpec spec;
 
     public enum ExitStatus {
-	FULL_SCAN_REQUIRED(0),
-	FULL_SCAN_NOT_REQUIRED(1);
-	private int exitStatus;
-	public int getExitStatus() {
-	    return exitStatus;
-	}
-	private ExitStatus(int exitStatus) {
-	    this.exitStatus = exitStatus;
-	}
+        FULL_SCAN_REQUIRED(0),
+        FULL_SCAN_NOT_REQUIRED(1);
+        private int exitStatus;
+
+        public int getExitStatus() {
+            return exitStatus;
+        }
+
+        private ExitStatus(int exitStatus) {
+            this.exitStatus = exitStatus;
+        }
     }
+
     /**
      * TeamCommand Constructor for team based operations against Checkmarx
-     * @param cxService the SDK client
+     *
+     * @param cxService    the SDK client
      * @param cxProperties the SDK configuration
      */
     public ProjectCommand(CxService cxService, CxProperties cxProperties) {
@@ -71,81 +75,82 @@ public class ProjectCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         log.info("Calling role command");
 
-	CommandLine.usage(spec, System.err);
+        CommandLine.usage(spec, System.err);
         return CommandLine.ExitCode.USAGE;
     }
 
     /**
      * Set a project's custom fields
-     * @param strict fail if an unrecognized custom field is supplied
-     * @param team the team to which the project belongs
-     * @param units the units by which the duration is measured (if null, days are used)
+     *
+     * @param strict  fail if an unrecognized custom field is supplied
+     * @param team    the team to which the project belongs
+     * @param units   the units by which the duration is measured (if null, days are used)
      * @param project the project
      * @throws CheckmarxException
      */
     @Command(name = "set-custom-fields", description = "Set a project's custom fields")
     private void setCustomFields(
-	    @Option(names = {"-s", "--strict"}, description = "Fail if unrecognised custom field specified") Boolean strict,
-	    @Option(names = {"-t", "--team"}, description = "The team to which the project belongs") String team,
-	    @Parameters(paramLabel = "Project", description = "The project name, optionally qualified by the team") String project,
-	    @Parameters(paramLabel = "Custom fields", arity = "1..*", description = "One or more name=value pairs") String[] customFields
-	    ) throws CheckmarxException{
+            @Option(names = {"-s", "--strict"}, description = "Fail if unrecognised custom field specified") Boolean strict,
+            @Option(names = {"-t", "--team"}, description = "The team to which the project belongs") String team,
+            @Parameters(paramLabel = "Project", description = "The project name, optionally qualified by the team") String project,
+            @Parameters(paramLabel = "Custom fields", arity = "1..*", description = "One or more name=value pairs") String[] customFields
+    ) throws CheckmarxException {
         log.info("Calling project set-custom-fields command");
         log.debug("setCustomFields: strict: {}, team: {}, project: {}, customFields: {}",
-        	strict, team, project, customFields);
+                strict, team, project, customFields);
 
         CxProject cxProject = getCxProject(project, team);
 
-	List<CxCustomField> cxCustomFields = cxService.getCustomFields();
-	log.debug("setCustomFields: cxCustomFields: {}", cxCustomFields);
-	List<CxProject.CustomField> customFieldList = new ArrayList<>();
-	for (String customField : customFields) {
-	    String[] parts = customField.split("=", 2);
-	    String customFieldName = parts[0];
-	    String customFieldValue = parts[1];
-	    CxProject.CustomField cf = new CxProject.CustomField();
-	    for (CxCustomField ccf : cxCustomFields) {
-		if (ccf.name.equalsIgnoreCase(customFieldName)) {
-		    cf.id = ccf.id;
-		    break;
-		}
-	    }
-	    if (cf.id == null) {
-		if (strict != null && strict) {
-		    throw new CheckmarxException(String.format("%s: unrecognised custom field", customFieldName));
-		} else {
-		    log.warn("{}: skipping unrecognised custom field", customFieldName);
-		    continue;
-		}
-	    }
-	    cf.value = customFieldValue;
-	    customFieldList.add(cf);
-	}
+        List<CxCustomField> cxCustomFields = cxService.getCustomFields();
+        log.debug("setCustomFields: cxCustomFields: {}", cxCustomFields);
+        List<CxProject.CustomField> customFieldList = new ArrayList<>();
+        for (String customField : customFields) {
+            String[] parts = customField.split("=", 2);
+            String customFieldName = parts[0];
+            String customFieldValue = parts[1];
+            CxProject.CustomField cf = new CxProject.CustomField();
+            for (CxCustomField ccf : cxCustomFields) {
+                if (ccf.name.equalsIgnoreCase(customFieldName)) {
+                    cf.id = ccf.id;
+                    break;
+                }
+            }
+            if (cf.id == null) {
+                if (strict != null && strict) {
+                    throw new CheckmarxException(String.format("%s: unrecognised custom field", customFieldName));
+                } else {
+                    log.warn("{}: skipping unrecognised custom field", customFieldName);
+                    continue;
+                }
+            }
+            cf.value = customFieldValue;
+            customFieldList.add(cf);
+        }
 
-	if (!customFieldList.isEmpty()) {
-	    cxProject.customFields = customFieldList;
-	    cxService.updateProjectCustomFields(cxProject);
-	} else {
-	    log.info("No valid custom fields provided");
-	}
+        if (!customFieldList.isEmpty()) {
+            cxProject.customFields = customFieldList;
+            cxService.updateProjectCustomFields(cxProject);
+        } else {
+            log.info("No valid custom fields provided");
+        }
     }
 
     /**
      * Check whether a full scan should be forced for the specified project.
      *
      * @param duration the maximum amount of elapsed time since the last full scan
-     * @param team the team to which the project belongs
-     * @param units the units by which the duration is measured (if null, days are used)
-     * @param project the project
+     * @param team     the team to which the project belongs
+     * @param units    the units by which the duration is measured (if null, days are used)
+     * @param project  the project
      * @throws CheckmarxException if more than one matching project is found
      */
     @Command(name = "force-full-scan", description = "Indicate if a full scan is required")
     private int forceFullScan(
-	    @Option(names = {"-d", "--duration"}, description = "The duration since the last full scan") Integer duration,
-	    @Option(names = {"-t", "--team"}, description = "The team to which the project belongs") String team,
-	    @Option(names = {"-u", "--units"}, description = "The duration units (default is days)") String units,
-	    @Parameters(paramLabel = "Project") String project
-	    ) throws CheckmarxException{
+            @Option(names = {"-d", "--duration"}, description = "The duration since the last full scan") Integer duration,
+            @Option(names = {"-t", "--team"}, description = "The team to which the project belongs") String team,
+            @Option(names = {"-u", "--units"}, description = "The duration units (default is days)") String units,
+            @Parameters(paramLabel = "Project") String project
+    ) throws CheckmarxException {
         log.info("Calling project force-full-scan command");
         // Currently, duration must be specified but, maybe, in the future,
         // we will want to add other criteria for forcing a full scan which
@@ -156,18 +161,18 @@ public class ProjectCommand implements Callable<Integer> {
         List<CxProject> cxProjects = getCxProjects(project, team);
         CxProject cxProject = null;
         switch (cxProjects.size()) {
-        case 0:
-            // The assumption is that this program is being called as part of
-            // a larger process that will create the project if it does not
-            // exist in which case, by definition, it will not hae been scanned
-            // and so a full scan will be required.
-            log.info("forceFullScan: project not found: full scan required");
-            return ExitStatus.FULL_SCAN_REQUIRED.getExitStatus();
-        case 1:
-            cxProject = cxProjects.get(0);
-            break;
-        default:
-            throw new CheckmarxException();
+            case 0:
+                // The assumption is that this program is being called as part of
+                // a larger process that will create the project if it does not
+                // exist in which case, by definition, it will not hae been scanned
+                // and so a full scan will be required.
+                log.info("forceFullScan: project not found: full scan required");
+                return ExitStatus.FULL_SCAN_REQUIRED.getExitStatus();
+            case 1:
+                cxProject = cxProjects.get(0);
+                break;
+            default:
+                throw new CheckmarxException(String.format("Expected zero or one matches for \"%s\" (found %d)", project, cxProjects.size()));
         }
         ChronoUnit chronoUnit = ChronoUnit.DAYS;
         if (units != null) {
@@ -196,22 +201,22 @@ public class ProjectCommand implements Callable<Integer> {
      * Given a project name and an optional team name, return the project.
      *
      * @param project the project name (possibly qualified by the team name)
-     * @param team the team name
+     * @param team    the team name
      * @return the project
      * @throws CheckmarxException if the project cannot be found or there are multiple matching projects
      */
     private CxProject getCxProject(String project, String team) throws CheckmarxException {
-	log.debug("getCxProject: project: {}, team: {}", project, team);
+        log.debug("getCxProject: project: {}, team: {}", project, team);
         CxProject cxProject = null;
         List<CxProject> projects = getCxProjects(project, team);
         switch (projects.size()) {
-        case 0:
-            throw new CheckmarxException(String.format("getCxProject: %s: no matching project", project));
-        case 1:
-            cxProject = projects.get(0);
-            break;
-        default:
-            throw new CheckmarxException(String.format("getCxProject: %s: project name is not unique", project));
+            case 0:
+                throw new CheckmarxException(String.format("getCxProject: %s: no matching project", project));
+            case 1:
+                cxProject = projects.get(0);
+                break;
+            default:
+                throw new CheckmarxException(String.format("getCxProject: %s: project name is not unique", project));
         }
 
         log.debug("getCxProject: project with id {} found", cxProject.getId());
@@ -223,12 +228,12 @@ public class ProjectCommand implements Callable<Integer> {
      * matching projects.
      *
      * @param project the project name (possibly qualified by the team name)
-     * @param team the team name
+     * @param team    the team name
      * @return the list of projects (which may be empty)
      * @throws CheckmarxException if the underlying SDK throws this exception
      */
     private List<CxProject> getCxProjects(String project, String team) throws CheckmarxException {
-	log.debug("getCxProjects: project: {}, team: {}", project, team);
+        log.debug("getCxProjects: project: {}, team: {}", project, team);
         CxProject cxProject = null;
 
         // If the project has been provided as <team>/<project>, split it.
@@ -244,14 +249,14 @@ public class ProjectCommand implements Callable<Integer> {
             team = addTeamPathSeparatorPrefix(cxProperties, team);
             String teamId = getTeamId(team);
             if (UNKNOWN_STR.equals(teamId)) {
-        	throw new CheckmarxException(String.format("getCxProjects: %s: no matching team", team));
+                throw new CheckmarxException(String.format("getCxProjects: %s: no matching team", team));
             }
             cxProjects = new ArrayList<>();
             Integer projectId = cxService.getProjectId(teamId, project);
             if (UNKNOWN_INT != projectId) {
                 cxProject = cxService.getProject(projectId);
                 if (cxProject != null) {
-            	   cxProjects.add(cxProject);
+                    cxProjects.add(cxProject);
                 }
             }
         } else {
