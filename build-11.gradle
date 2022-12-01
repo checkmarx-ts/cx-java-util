@@ -25,6 +25,10 @@ configurations {
 	libsDirName = 'libs/java11'
 }
 
+jar {
+    enabled = false
+}
+
 // Signing
 apply plugin: 'signing'
 signing {

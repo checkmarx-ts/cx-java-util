@@ -18,6 +18,10 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
+jar {
+    enabled = false
+}
+
 // Signing
 apply plugin: 'signing'
 signing {
