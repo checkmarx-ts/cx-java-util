@@ -3,6 +3,7 @@ package com.checkmarx.util.cmd;
 import com.checkmarx.sdk.config.CxProperties;
 import com.checkmarx.sdk.dto.cx.CxCustomField;
 import com.checkmarx.sdk.dto.cx.CxProject;
+import com.checkmarx.sdk.dto.cx.CxProjectBranchingStatus;
 import com.checkmarx.sdk.dto.cx.CxTeam;
 import com.checkmarx.sdk.exception.CheckmarxException;
 import com.checkmarx.sdk.service.CxService;
@@ -195,6 +196,35 @@ public class ProjectCommand implements Callable<Integer> {
             log.info("forceFullScan: full scan not required");
             return ExitStatus.FULL_SCAN_NOT_REQUIRED.getExitStatus();
         }
+    }
+
+    /**
+     * Retrieve the branching status of a project.
+     *
+     * @param team     the team to which the project belongs
+     * @param project  the project
+     * @throws CheckmarxException if more than one matching project is found
+     */
+    @Command(name = "get-branching-status", description = "Returns the branching status of the project")
+    private void getBranchStatus(
+            @Option(names = {"-t", "--team"}, description = "The team to which the project belongs") String team,
+            @Parameters(paramLabel = "Project") String project
+    ) throws CheckmarxException {
+        log.info("Calling project get-branch-status command");
+        List<CxProject> cxProjects = getCxProjects(project, team);
+        CxProject cxProject = null;
+        switch (cxProjects.size()) {
+            case 0:
+                log.info("getBranchStatus: {}: project not found", project);
+                return;
+            case 1:
+                cxProject = cxProjects.get(0);
+                break;
+            default:
+                throw new CheckmarxException(String.format("Expected zero or one matches for \"%s\" (found %d)", project, cxProjects.size()));
+        }
+        CxProjectBranchingStatus projectBranchingStatus = cxService.getProjectBranchingStatus(cxProject.id);
+        log.info("getBranchStatus: project branch status: {}", projectBranchingStatus);
     }
 
     /**
