@@ -199,6 +199,37 @@ public class ProjectCommand implements Callable<Integer> {
     }
 
     /**
+     * Branch a project
+     *
+     * @param team the team to which the project belongs
+     * @param project the project to be branched
+     * @param branch the name of the branched project
+     * @throws CheckmarxException
+     */
+    @Command(name = "branch", description = "Creates a branch project")
+    private void branch(
+            @Option(names = {"-t", "--team"}, description = "The team to which the project belongs") String team,
+            @Parameters(paramLabel = "project") String project,
+            @Parameters(paramLabel = "branch") String branch
+    ) throws CheckmarxException {
+        log.info("Calling project branch command: project: {}, branch: {}", project, branch);
+        List<CxProject> cxProjects = getCxProjects(project, team);
+        CxProject cxProject = null;
+        switch (cxProjects.size()) {
+            case 0:
+                log.info("getBranchStatus: {}: project not found", project);
+                return;
+            case 1:
+                cxProject = cxProjects.get(0);
+                break;
+            default:
+                throw new CheckmarxException(String.format("Expected zero or one matches for \"%s\" (found %d)", project, cxProjects.size()));
+        }
+        Integer projectId = cxService.branchProject(cxProject.id, branch);
+        log.info("branch: ID of branch project: {}", projectId);
+    }
+
+    /**
      * Retrieve the branching status of a project.
      *
      * @param team     the team to which the project belongs
