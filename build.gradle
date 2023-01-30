@@ -13,7 +13,7 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'com.github.checkmarx-ltd:cx-spring-boot-sdk:0.5.32'
+	implementation 'com.github.checkmarx-ltd:cx-spring-boot-sdk:0.5.37'
 	implementation 'info.picocli:picocli-spring-boot-starter:4.7.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
