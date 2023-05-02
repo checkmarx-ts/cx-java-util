@@ -43,6 +43,7 @@ public class CheckmarxUtilRunner implements Callable<Integer>, CommandLineRunner
         // Strip out arguments used to configure the SDK
         args = Arrays.stream(args)
                 .filter(s -> !s.startsWith("--checkmarx."))
+		.filter(s -> !s.startsWith("--logging."))
                 .toArray(String[]::new);
 
         exitCode = new CommandLine(this)
