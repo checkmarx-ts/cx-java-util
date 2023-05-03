@@ -23,7 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 /**
- * Command for report based operations within Checkmarx
+ * Command for results based operations within Checkmarx
  */
 @Component
 @Command(name = "results")
