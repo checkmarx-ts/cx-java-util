@@ -84,7 +84,6 @@ public class ProjectCommand implements Callable<Integer> {
      *
      * @param strict  fail if an unrecognized custom field is supplied
      * @param team    the team to which the project belongs
-     * @param units   the units by which the duration is measured (if null, days are used)
      * @param project the project
      * @throws CheckmarxException
      */
